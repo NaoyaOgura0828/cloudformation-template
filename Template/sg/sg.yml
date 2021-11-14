@@ -1,0 +1,385 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SecurityGroup
+
+Parameters:
+  SystemName:
+    Type: String
+    Default: xxxx
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    Default: dev
+    AllowedValues: [all, dev, stg, prod]
+    ConstraintDescription: must specify all, dev, stg, or prod.
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3nd: ap-northeast-1d
+
+Resources:
+  # SecurityGroup for Bastion
+  SecurityGroupBastion:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub
+        - ${SystemName}-${EnvType}-bastion-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      GroupName: !Sub
+        - ${SystemName}-${EnvType}-bastion-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'SSH'
+          CidrIp: 0.0.0.0/0
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+        - Description: 'RDP'
+          CidrIp: 0.0.0.0/0
+          FromPort: 3389
+          ToPort: 3389
+          IpProtocol: tcp
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-bastion-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # SecurityGroup for WebALB
+  SecurityGroupWebALB:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub
+        - ${SystemName}-${EnvType}-web-alb-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      GroupName: !Sub
+        - ${SystemName}-${EnvType}-web-alb-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'HTTP'
+          CidrIp: 0.0.0.0/0
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+        - Description: 'HTTPS'
+          CidrIp: 0.0.0.0/0
+          FromPort: 443
+          ToPort: 443
+          IpProtocol: tcp
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-web-alb-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # SecurityGroup for WebEC2
+  SecurityGroupWeb:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub
+        - ${SystemName}-${EnvType}-web-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      GroupName: !Sub
+        - ${SystemName}-${EnvType}-web-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'From bastion'
+          SourceSecurityGroupId: !Ref SecurityGroupBastion
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+        - Description: 'From ALB'
+          SourceSecurityGroupId: !Ref SecurityGroupWebALB
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+        - Description: 'From ALB'
+          SourceSecurityGroupId: !Ref SecurityGroupWebALB
+          FromPort: 443
+          ToPort: 443
+          IpProtocol: tcp
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-web-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # SecurityGroup for EcsALB
+  SecurityGroupEcsALB:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub
+        - ${SystemName}-${EnvType}-ecs-alb-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      GroupName: !Sub
+        - ${SystemName}-${EnvType}-ecs-alb-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'HTTP'
+          CidrIp: 0.0.0.0/0
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+        - Description: 'HTTPS'
+          CidrIp: 0.0.0.0/0
+          FromPort: 443
+          ToPort: 443
+          IpProtocol: tcp
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-ecs-alb-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # SecurityGroup for ECS
+  SecurityGroupECS:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub
+        - ${SystemName}-${EnvType}-ecs-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      GroupName: !Sub
+        - ${SystemName}-${EnvType}-ecs-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'From ALB'
+          SourceSecurityGroupId: !Ref SecurityGroupEcsALB
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-ecs-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # SecurityGroup for RDS
+  SecurityGroupRDS:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub
+        - ${SystemName}-${EnvType}-rds-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      GroupName: !Sub
+        - ${SystemName}-${EnvType}-rds-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'From ECS'
+          SourceSecurityGroupId: !Ref SecurityGroupECS
+          FromPort: 3306
+          ToPort: 3306
+          IpProtocol: tcp
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-rds-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # SecurityGroup for VPC Endpoint
+  SecurityGroupVPCEndpoint:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub
+        - ${SystemName}-${EnvType}-vpc-endpoint-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      GroupName: !Sub
+        - ${SystemName}-${EnvType}-vpc-endpoint-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'For private access 1'
+          FromPort: 0
+          ToPort: 65535
+          IpProtocol: tcp
+          CidrIp:
+            Fn::ImportValue: !Sub
+              - ${SystemName}-${EnvType}-private-subnet1-cider
+              - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'For private access 2'
+          FromPort: 0
+          ToPort: 65535
+          IpProtocol: tcp
+          CidrIp:
+            Fn::ImportValue: !Sub
+              - ${SystemName}-${EnvType}-private-subnet2-cider
+              - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-vpc-endpoint-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # SecurityGroup for EFS
+  SecurityGroupEFS:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub
+        - ${SystemName}-${EnvType}-efs-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      GroupName: !Sub
+        - ${SystemName}-${EnvType}-efs-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'From Web EC2'
+          SourceSecurityGroupId: !Ref SecurityGroupWeb
+          FromPort: 2049
+          ToPort: 2049
+          IpProtocol: tcp
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-efs-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # SecurityGroup for Redis
+  SecurityGroupRedis:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub
+        - ${SystemName}-${EnvType}-redis-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      GroupName: !Sub
+        - ${SystemName}-${EnvType}-redis-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIngress:
+        - Description: 'From Web EC2'
+          SourceSecurityGroupId: !Ref SecurityGroupWeb
+          FromPort: 6379
+          ToPort: 6379
+          IpProtocol: tcp
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-redis-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+Outputs:
+  SecurityGroupBastion:
+    Value: !Ref SecurityGroupBastion
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-bastion-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  SecurityGroupWebALB:
+    Value: !Ref SecurityGroupWebALB
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-web-alb-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  SecurityGroupWeb:
+    Value: !Ref SecurityGroupWeb
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-web-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  SecurityGroupEcsALB:
+    Value: !Ref SecurityGroupEcsALB
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ecs-alb-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  SecurityGroupECS:
+    Value: !Ref SecurityGroupECS
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ecs-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  SecurityGroupRDS:
+    Value: !Ref SecurityGroupRDS
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-rds-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  SecurityGroupVPCEndpoint:
+    Value: !Ref SecurityGroupVPCEndpoint
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-vpc-endpoint-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  SecurityGroupEFS:
+    Value: !Ref SecurityGroupEFS
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-efs-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  SecurityGroupRedis:
+    Value: !Ref SecurityGroupRedis
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-redis-sg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}

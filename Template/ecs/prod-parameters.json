@@ -1,0 +1,51 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "prod"
+        },
+        {
+            "ParameterKey": "ContainerName",
+            "ParameterValue": "test-hello-world"
+        },
+        {
+            "ParameterKey": "isDisableNetworking",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isEssential",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "ImageName",
+            "ParameterValue": "hello-world"
+        },
+        {
+            "ParameterKey": "MemoryReservation",
+            "ParameterValue": "128"
+        },
+        {
+            "ParameterKey": "FamilyName",
+            "ParameterValue": "test-task"
+        },
+        {
+            "ParameterKey": "VolumeName",
+            "ParameterValue": "test-volume"
+        },
+        {
+            "ParameterKey": "CpuUnits",
+            "ParameterValue": "256"
+        },
+        {
+            "ParameterKey": "UsedMemory",
+            "ParameterValue": "512"
+        }
+    ],
+    "Capabilities": [
+        "CAPABILITY_NAMED_IAM"
+    ]
+}

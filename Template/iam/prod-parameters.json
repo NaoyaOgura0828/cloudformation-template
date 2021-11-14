@@ -1,0 +1,15 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "prod"
+        }
+    ],
+    "Capabilities": [
+        "CAPABILITY_NAMED_IAM"
+    ]
+}

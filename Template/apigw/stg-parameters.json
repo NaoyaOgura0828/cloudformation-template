@@ -1,0 +1,32 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "stg"
+        },
+        {
+            "ParameterKey": "HTTPProtocol",
+            "ParameterValue": "http"
+        },
+        {
+            "ParameterKey": "isKeyRequired",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "APIGatewayStage",
+            "ParameterValue": "v1"
+        },
+        {
+            "ParameterKey": "isLogging",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "ACMArn",
+            "ParameterValue": ""
+        }
+    ]
+}

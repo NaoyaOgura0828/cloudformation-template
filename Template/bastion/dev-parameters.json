@@ -1,0 +1,36 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "AMIID",
+            "ParameterValue": "ami-0d3442738ced05bc2"
+        },
+        {
+            "ParameterKey": "InstanceType",
+            "ParameterValue": "t3.small"
+        },
+        {
+            "ParameterKey": "IsEncrypted",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "VolumeSize",
+            "ParameterValue": "8"
+        },
+        {
+            "ParameterKey": "VolumeType",
+            "ParameterValue": "gp2"
+        },
+        {
+            "ParameterKey": "KeyName",
+            "ParameterValue": "Template-dev"
+        }
+    ]
+}

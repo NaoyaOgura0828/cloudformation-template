@@ -1,0 +1,72 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "prod"
+        },
+        {
+            "ParameterKey": "ServerHostName",
+            "ParameterValue": "api"
+        },
+        {
+            "ParameterKey": "TargetGroupHealthCheckPath",
+            "ParameterValue": "/"
+        },
+        {
+            "ParameterKey": "ListenerSslPolicy",
+            "ParameterValue": "ELBSecurityPolicy-2016-08"
+        },
+        {
+            "ParameterKey": "AMIID",
+            "ParameterValue": ""
+        },
+        {
+            "ParameterKey": "InstanceType",
+            "ParameterValue": "m5.large"
+        },
+        {
+            "ParameterKey": "InstanceType2",
+            "ParameterValue": "m5a.large"
+        },
+        {
+            "ParameterKey": "IsEncrypted",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "VolumeSize",
+            "ParameterValue": "100"
+        },
+        {
+            "ParameterKey": "VolumeType",
+            "ParameterValue": "gp2"
+        },
+        {
+            "ParameterKey": "ASGMinAndDesiredSize",
+            "ParameterValue": "2"
+        },
+        {
+            "ParameterKey": "ASGMaxSize",
+            "ParameterValue": "2"
+        },
+        {
+            "ParameterKey": "OnDemandBaseCapacity",
+            "ParameterValue": "0"
+        },
+        {
+            "ParameterKey": "OnDemandPercentageAboveBaseCapacity",
+            "ParameterValue": "70"
+        },
+        {
+            "ParameterKey": "KeyName",
+            "ParameterValue": "template-prod"
+        },
+        {
+            "ParameterKey": "EfsMountPath",
+            "ParameterValue": "efs-mntp"
+        }
+    ]
+}

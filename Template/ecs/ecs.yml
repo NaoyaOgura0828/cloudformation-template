@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECS
+
+Parameters:
+  SystemName:
+    Type: String
+    Default: xxxx
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    Default: dev
+    AllowedValues: [all, dev, stg, prod]
+    ConstraintDescription: must specify all, dev, stg, or prod.
+  ContainerName:
+    Description: ContainerName.
+    Type: String
+  isDisableNetworking:
+    Description: Container Disable Networking.
+    Type: String
+    AllowedValues: [true, false]
+    ConstraintDescription: must specify true or false.
+  isEssential:
+    Description: Container Essential.
+    Type: String
+    AllowedValues: [true, false]
+    ConstraintDescription: must specify true or false.
+  ImageName:
+    Description: Used ImageName.
+    Type: String
+  MemoryReservation:
+    Description: Container MemoryReservation.
+    Type: Number
+  FamilyName:
+    Description: FamilyName.
+    Type: String
+  VolumeName:
+    Description: VolumeName.
+    Type: String
+  CpuUnits:
+    Description: CpuUnits.
+    Type: Number
+  UsedMemory:
+    Description: UsedMemory.
+    Type: Number
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # ECSLogGroup 作成
+  ECSLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/logs/${FamilyName}
+
+  # ECSCluster 作成
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub
+        - ${SystemName}-${EnvType}-ecs-cluster
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      CapacityProviders:
+        - FARGATE_SPOT
+        - FARGATE
+      Tags:
+        - Key: Name
+          Value: !Sub
+          - ${SystemName}-${EnvType}-ecs-cluster
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # ECSTaskDefinition 作成
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      - Name: !Ref ContainerName
+        DisableNetworking: !Ref isDisableNetworking
+        Essential: !Ref isEssential
+        Image: !Sub
+          ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageName}:latest
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Ref ECSLogGroup
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: ecs
+        MemoryReservation: !Ref MemoryReservation
+      Family: !Ref FamilyName
+      ExecutionRoleArn:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-role-ecs-${AWS::Region}
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      NetworkMode: awsvpc
+      Volumes:
+        - Name: !Ref VolumeName
+          Host: {}
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: !Ref CpuUnits
+      Memory: !Ref UsedMemory
+      Tags:
+        - Key: Name
+          Value: !Sub
+          - ${SystemName}-${EnvType}-ecr-def
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # # ECSService 作成
+  # ECSService:
+  #   Type: AWS::ECS::Service
+  #   Properties:
+  #     Cluster: !Ref EcsCluster
+  #     DesiredCount: !Ref EcsServiceDesiredCount
+  #     LaunchType: FARGATE
+  #     NetworkConfiguration:
+  #       AwsvpcConfiguration:
+  #         AssignPublicIp: DISABLED
+  #         SecurityGroups:
+  #           - Fn::ImportValue: !Sub ${ProjectName}-${Env}-sg-ecs
+  #         Subnets:
+  #           - Fn::ImportValue: !Sub ${ProjectName}-${Env}-subnet-private-1
+  #           - Fn::ImportValue: !Sub ${ProjectName}-${Env}-subnet-private-2
+  #     ServiceName: !Sub ${ProjectName}-${Env}-ecs-service
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Sub ${ProjectName}-${Env}-ecs-service
+  #     TaskDefinition:
+  #       Ref: EcsTaskDifinition
+  #     LoadBalancers:
+  #       - ContainerName: !Sub ${ProjectName}-${Env}-ecs-container
+  #         ContainerPort: 80
+  #         TargetGroupArn:
+  #           Fn::ImportValue: !Sub ${ProjectName}-${Env}-alb-tg-arn

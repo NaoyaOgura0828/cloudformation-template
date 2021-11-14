@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECR
+
+Parameters:
+  SystemName:
+    Type: String
+    Default: xxxx
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    Default: dev
+    AllowedValues: [all, dev, stg, prod]
+    ConstraintDescription: must specify all, dev, stg, or prod.
+  ECRRepositoryName:
+    Description: RepositoryName.
+    Type: String
+  isScanOnPush:
+    Description: Enable ScanOnPush.
+    Type: String
+    AllowedValues: [true, false]
+    ConstraintDescription: must specify true or false.
+  CountNumber:
+    Description: LifecyclePolicy CountNumber.
+    Type: Number
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # ECRRepository 作成
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref ECRRepositoryName
+      ImageScanningConfiguration:
+        ScanOnPush: !Ref isScanOnPush
+      LifecyclePolicy:
+        LifecyclePolicyText: !Sub
+          - |
+            {
+              "rules": [
+                {
+                  "rulePriority": 1,
+                  "description": "Delete more then ${COUNT_NUMBER} images",
+                  "selection": {
+                    "tagStatus": "any",
+                    "countType": "imageCountMoreThan",
+                    "countNumber": ${COUNT_NUMBER}
+                },
+                  "action": {
+                    "type": "expire"
+                }
+                }
+              ]
+            }
+          - {
+              COUNT_NUMBER: !Ref CountNumber,
+            }
+      Tags:
+        - Key: Name
+          Value: !Sub
+          - ${SystemName}-${EnvType}-ecr
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+Outputs:
+  ECRRepository:
+    Value: !Ref ECRRepository
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ecr
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  ECRRepositoryArn:
+    Value: !GetAtt ECRRepository.Arn
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ecr-arn
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
