@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CodeCommit
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues: [all, dev, stg, prod]
+    ConstraintDescription: must specify all, dev, stg, or prod.
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # # CodeCommitRepository テンプレート
+  # CodeCommitRepository{NUMBERING}:
+  #   Type: AWS::CodeCommit::Repository
+  #   Properties:
+  #     RepositoryName: # {任意のRepositoryName}
+  #     RepositoryDescription: # {任意のRepositoryDescription}
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Sub
+  #           - ${SystemName}-${EnvType}-code-commit-repo-{NUMBERING}
+  #           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  #       - Key: SystemName
+  #         Value: !Ref SystemName
+  #       - Key: EnvType
+  #         Value: !Ref EnvType
+
+  # CodeCommitRepository 作成
+  CodeCommitRepository1:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: TemplateRepository
+      RepositoryDescription: TemplateRepository
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-code-commit-repo-1
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+Outputs:
+  # # CodeCommitRepositoryName テンプレート
+  # CodeCommitRepositoryName{NUMBERING}:
+  #   Value: !GetAtt CodeCommitRepository{NUMBERING}.Name
+  #   Export:
+  #     Name: !Sub
+  #       - ${SystemName}-${EnvType}-code-commit-repo-name-{NUMBERING}
+  #       - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  # # CodeCommitRepositoryURL テンプレート
+  # CodeCommitRepositoryURL{NUMBERING}:
+  #   Value: !GetAtt CodeCommitRepository{NUMBERING}.CloneUrlHttp
+  #   Export:
+  #     Name: !Sub
+  #       - ${SystemName}-${EnvType}-code-commit-repo-url-{NUMBERING}
+  #       - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+
+  CodeCommitRepositoryName1:
+    Value: !GetAtt CodeCommitRepository1.Name
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-code-commit-repo-name-1
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  CodeCommitRepositoryURL1:
+    Value: !GetAtt CodeCommitRepository1.CloneUrlHttp
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-code-commit-repo-url-1
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
