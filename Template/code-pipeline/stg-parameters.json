@@ -1,0 +1,16 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "stg"
+        },
+        {
+            "ParameterKey": "BranchName",
+            "ParameterValue": "main"
+        }
+    ]
+}
