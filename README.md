@@ -248,6 +248,83 @@
 5. `AWS CloudFormation`へアクセスしリソースが構築されているか確認を行う。
 
 <br>
+<br>
+
+## CodeCommit リポジトリ追加手順
+
+<br>
+
+1. `code-commit.yml`内の`CodeCommitRepository テンプレート`をコメントアウト解除、コピペし、リソース名を
+    <br>
+    `CodeCommitRepository{NUMBERING}`と設定する。
+    <br>
+    `RepositoryName`, `RepositoryDescription`をそれぞれ任意の名称に設定する。
+    <br>
+    `Tags`の`{NUMBERING}`についても設定する。
+
+    ```yml
+    Resources:
+
+    # 追加Repositoryは既存Repository下部へ追加推奨
+
+    # CodeCommitRepository テンプレート
+    # ここからコピペ
+    CodeCommitRepository # {NUMBERING}:
+        Type: AWS::CodeCommit::Repository
+        Properties:
+        RepositoryName: # {任意のRepositoryName}
+        RepositoryDescription: # {任意のRepositoryDescription}
+        Tags:
+            - Key: Name
+            Value: !Sub
+                - ${SystemName}-${EnvType}-code-commit-repo- # {NUMBERING}
+                - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+            - Key: SystemName
+            Value: !Ref SystemName
+            - Key: EnvType
+            Value: !Ref EnvType
+    # ここまでコピペ
+    ```
+
+<br>
+
+2. `CodeCommitRepositoryName テンプレート`及び`CodeCommitRepositoryURL テンプレート`
+    <br>
+    をコメントアウト解除、コピペし、リソース名を
+    <br>
+    `CodeCommitRepositoryName{NUMBERING}`、`CodeCommitRepositoryURL{NUMBERING}`
+    <br>
+    とそれぞれ設定する。
+    <br>
+    また`Value`及び`Name`についても`{NUMBERING}`を設定変更する。
+
+    ```yml
+    Outputs:
+
+    # 追加Outputsは既存Outputsリソース下部へ追加推奨
+
+    # CodeCommitRepositoryName テンプレート
+    # ここからコピペ
+    CodeCommitRepositoryName # {NUMBERING}:
+        Value: !GetAtt CodeCommitRepository # {NUMBERING}.Name
+        Export:
+        Name: !Sub
+            - ${SystemName}-${EnvType}-code-commit-repo-name- # {NUMBERING}
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+    # CodeCommitRepositoryURL テンプレート
+    # ↑コメント削除
+    CodeCommitRepositoryURL # {NUMBERING}:
+        Value: !GetAtt CodeCommitRepository # {NUMBERING}.CloneUrlHttp
+        Export:
+        Name: !Sub
+            - ${SystemName}-${EnvType}-code-commit-repo-url- # {NUMBERING}
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+    # ここまでコピペ
+    ```
+
+<br>
+
+3. `code-commit`の`create_change_sets.sh`を実行する。
 
 
 # Note
