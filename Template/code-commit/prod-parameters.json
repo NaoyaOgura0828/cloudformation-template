@@ -7,6 +7,14 @@
         {
             "ParameterKey": "EnvType",
             "ParameterValue": "prod"
+        },
+        {
+            "ParameterKey": "RepositoryName",
+            "ParameterValue": "TemplateRepository"
+        },
+        {
+            "ParameterKey": "RepositoryDescription",
+            "ParameterValue": "TemplateRepositoryDescription"
         }
     ]
 }
