@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CodeBuild
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues: [all, dev, stg, prod]
+    ConstraintDescription: must specify all, dev, stg, or prod.
+  BuildContainerImage:
+    Type: String
+    Default: 'aws/codebuild/amazonlinux2-x86_64-standard:2.0'
+  ComputeType:
+    Description: The type of compute environment.
+    Type: String
+  isPrivilegedMode:
+    Description: Enables running the Docker daemon inside a Docker container.
+    Type: String
+    AllowedValues: [true, false]
+  ECRRepositoryName:
+    Description: RepositoryName.
+    Type: String
+  TimeoutInMinutes:
+    Description: Time to wait before timeout related builds that were not marked as complete..
+    Type: Number
+  QueuedTimeoutInMinutes:
+    Description: The number of minutes a build is allowed to be queued before it times out.
+    Type: Number
+  CloudWatchLogsStatus:
+    Description: The current status of the logs in CloudWatch Logs for a build project.
+    Type: String
+    AllowedValues: [ENABLED, DISABLED]
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # CodeBuildProject 作成
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-code-build
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: !Ref BuildContainerImage
+        ComputeType: !Ref ComputeType
+        PrivilegedMode: !Ref isPrivilegedMode
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Type: PLAINTEXT
+            Value: !Sub ${AWS::Region}
+          - Name: AWS_ACCOUNT_ID
+            Type: PLAINTEXT
+            Value: !Sub  ${AWS::AccountId}
+          - Name: IMAGE_TAG
+            Type: PLAINTEXT
+            Value: latest
+          - Name: IMAGE_REPO_NAME
+            Type: PLAINTEXT
+            Value: !Ref ECRRepositoryName
+          - Name: CONTAINER_NAME
+            Type: PLAINTEXT
+            Value: !Sub ${SystemName}-${EnvType}-ecs-container
+      ServiceRole:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-role-code-build-${AWS::Region}
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Source:
+        Type: CODECOMMIT
+        GitCloneDepth: 1
+        Location:
+          Fn::ImportValue:
+            !Sub ${SystemName}-${EnvType}-code-commit-repo-url
+      TimeoutInMinutes: !Ref TimeoutInMinutes
+      QueuedTimeoutInMinutes: !Ref QueuedTimeoutInMinutes
+      LogsConfig:
+        CloudWatchLogs:
+          Status: !Ref CloudWatchLogsStatus
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-code-build
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+Outputs:
+  CodeBuildProject:
+    Value: !Ref CodeBuildProject
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-code-build
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}

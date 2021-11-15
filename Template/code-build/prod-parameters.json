@@ -1,0 +1,40 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "prod"
+        },
+        {
+            "ParameterKey": "BuildContainerImage",
+            "ParameterValue": "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
+        },
+        {
+            "ParameterKey": "ComputeType",
+            "ParameterValue": "BUILD_GENERAL1_SMALL"
+        },
+        {
+            "ParameterKey": "isPrivilegedMode",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "ECRRepositoryName",
+            "ParameterValue": "template-ecr"
+        },
+        {
+            "ParameterKey": "TimeoutInMinutes",
+            "ParameterValue": "60"
+        },
+        {
+            "ParameterKey": "QueuedTimeoutInMinutes",
+            "ParameterValue": "120"
+        },
+        {
+            "ParameterKey": "CloudWatchLogsStatus",
+            "ParameterValue": "ENABLED"
+        }
+    ]
+}
