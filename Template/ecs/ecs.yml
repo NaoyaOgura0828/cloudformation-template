@@ -144,3 +144,13 @@ Resources:
   #         ContainerPort: 80
   #         TargetGroupArn:
   #           Fn::ImportValue: !Sub ${ProjectName}-${Env}-alb-tg-arn
+
+Outputs:
+  ECSCluster:
+    Value: !GetAtt ECSCluster.Arn
+    Export:
+      Name: ECSClusterArn
+  ECSTaskDefinition:
+    Value: !Ref ECSTaskDefinition
+    Export:
+      Name: ECSTaskDefinitionArn

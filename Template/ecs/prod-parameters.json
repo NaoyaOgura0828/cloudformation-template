@@ -44,8 +44,5 @@
             "ParameterKey": "UsedMemory",
             "ParameterValue": "512"
         }
-    ],
-    "Capabilities": [
-        "CAPABILITY_NAMED_IAM"
     ]
 }
