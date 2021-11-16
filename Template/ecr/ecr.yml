@@ -4,7 +4,6 @@ Description: ECR
 Parameters:
   SystemName:
     Type: String
-    Default: xxxx
     AllowedPattern: '[a-zA-Z0-9-]*'
   EnvType:
     Description: Environment type.
@@ -83,4 +82,10 @@ Outputs:
     Export:
       Name: !Sub
         - ${SystemName}-${EnvType}-ecr-arn
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  ECRRepositoryRepositoryUri:
+    Value: !GetAtt ECRRepository.RepositoryUri
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ecr-uri
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
