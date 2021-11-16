@@ -177,10 +177,15 @@ Resources:
         - ${SystemName}-${EnvType}-ecs-sg
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       SecurityGroupIngress:
-        - Description: 'From ALB'
-          SourceSecurityGroupId: !Ref SecurityGroupEcsALB
+        - Description: 'HTTP'
+          CidrIp: 0.0.0.0/0
           FromPort: 80
           ToPort: 80
+          IpProtocol: tcp
+        - Description: 'HTTPS'
+          CidrIp: 0.0.0.0/0
+          FromPort: 443
+          ToPort: 443
           IpProtocol: tcp
       VpcId:
         Fn::ImportValue: !Sub
