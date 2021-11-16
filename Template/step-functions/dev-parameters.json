@@ -1,0 +1,32 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "JTB"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "StateMachineType",
+            "ParameterValue": "STANDARD"
+        },
+        {
+            "ParameterKey": "isIncludeExecutionData",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isAssignPublicIp",
+            "ParameterValue": "ENABLED"
+        },
+        {
+            "ParameterKey": "SecurityGroups",
+            "ParameterValue": ""
+        },
+        {
+            "ParameterKey": "Subnets",
+            "ParameterValue": ""
+        }
+    ]
+}
