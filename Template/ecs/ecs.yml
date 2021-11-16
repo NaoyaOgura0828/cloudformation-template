@@ -25,14 +25,11 @@ Parameters:
     Type: String
     AllowedValues: [true, false]
     ConstraintDescription: must specify true or false.
-  ImageName:
-    Description: Used ImageName.
-    Type: String
   MemoryReservation:
     Description: Container MemoryReservation.
     Type: Number
-  FamilyName:
-    Description: FamilyName.
+  TaskFamilyName:
+    Description: TaskFamilyName.
     Type: String
   VolumeName:
     Description: VolumeName.
@@ -56,7 +53,7 @@ Resources:
   ECSLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /ecs/logs/${FamilyName}
+      LogGroupName: !Sub /ecs/logs/${TaskFamilyName}
 
   # ECSCluster 作成
   ECSCluster:
@@ -86,8 +83,10 @@ Resources:
       - Name: !Ref ContainerName
         DisableNetworking: !Ref isDisableNetworking
         Essential: !Ref isEssential
-        Image: !Sub
-          ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageName}:latest
+        Image:
+          Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-ecr-uri
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         LogConfiguration:
           LogDriver: awslogs
           Options:
@@ -95,7 +94,7 @@ Resources:
             awslogs-region: !Ref AWS::Region
             awslogs-stream-prefix: ecs
         MemoryReservation: !Ref MemoryReservation
-      Family: !Ref FamilyName
+      Family: !Ref TaskFamilyName
       ExecutionRoleArn:
         Fn::ImportValue: !Sub
           - ${SystemName}-${EnvType}-role-ecs-${AWS::Region}

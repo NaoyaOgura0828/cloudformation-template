@@ -10,7 +10,7 @@
         },
         {
             "ParameterKey": "ContainerName",
-            "ParameterValue": "test-hello-world"
+            "ParameterValue": "template-container"
         },
         {
             "ParameterKey": "isDisableNetworking",
@@ -21,20 +21,16 @@
             "ParameterValue": "true"
         },
         {
-            "ParameterKey": "ImageName",
-            "ParameterValue": "hello-world"
-        },
-        {
             "ParameterKey": "MemoryReservation",
             "ParameterValue": "128"
         },
         {
-            "ParameterKey": "FamilyName",
-            "ParameterValue": "test-task"
+            "ParameterKey": "TaskFamilyName",
+            "ParameterValue": "template-task"
         },
         {
             "ParameterKey": "VolumeName",
-            "ParameterValue": "test-volume"
+            "ParameterValue": "template-volume"
         },
         {
             "ParameterKey": "CpuUnits",
