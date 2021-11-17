@@ -68,8 +68,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub
-          - ${SystemName}-${EnvType}-ecs-cluster
-          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+            - ${SystemName}-${EnvType}-ecs-cluster
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
@@ -110,8 +110,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub
-          - ${SystemName}-${EnvType}-ecr-def
-          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+            - ${SystemName}-${EnvType}-ecr-def
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
