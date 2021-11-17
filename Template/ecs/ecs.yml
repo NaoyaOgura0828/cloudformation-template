@@ -145,11 +145,15 @@ Resources:
   #           Fn::ImportValue: !Sub ${ProjectName}-${Env}-alb-tg-arn
 
 Outputs:
-  ECSCluster:
+  ECSClusterArn:
     Value: !GetAtt ECSCluster.Arn
     Export:
-      Name: ECSClusterArn
-  ECSTaskDefinition:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ecs-cluster-arn
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  ECSTaskDefinitionArn:
     Value: !Ref ECSTaskDefinition
     Export:
-      Name: ECSTaskDefinitionArn
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ecr-def-arn
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
