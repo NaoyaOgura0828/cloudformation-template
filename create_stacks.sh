@@ -46,6 +46,8 @@ create_stack () {
 # aws ses verify-email-identity --email-address $(eval echo '$'${ENV_TYPE^^}'_EMAIL_ADDRESS') --profile ${SYSTEM_NAME}-${ENV_TYPE}
 # create_stack ecr
 # create_stack ecs
+# create_stack step-functions
+
 
 #####################################
 # WEB/AP

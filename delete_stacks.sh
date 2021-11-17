@@ -42,6 +42,7 @@ delete_stack () {
 #####################################
 # 共通
 #####################################
+# delete_stack step-functions
 # delete_stack ecs
 # delete_stack ecr
 # aws ses delete-identity --identity {希望Emailアドレス: info@dev-template.dev}

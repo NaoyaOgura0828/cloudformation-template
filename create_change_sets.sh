@@ -47,6 +47,7 @@ create_change_set () {
 # create_change_set route53
 # create_change_set ecr
 # create_change_set ecs
+# create_change_set step-functions
 
 #####################################
 # WEB/AP
