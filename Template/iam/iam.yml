@@ -20,7 +20,7 @@ Mappings:
       3rd: ap-northeast-1d
 
 Resources:
-  # VPCFlowLog IAMロール 作成
+  # VPCFlowLog ロール作成
   RoleVPCFlowLog:
     Type: AWS::IAM::Role
     Properties:
@@ -428,6 +428,12 @@ Resources:
           Value: !Ref EnvType
 
 Outputs:
+  RoleVPCFlowLogArn:
+    Value: !GetAtt RoleVPCFlowLog.Arn
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-role-vpc-flowlog-${AWS::Region}
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
   InstanceProfileBastion:
     Value: !Ref InstanceProfileBastion
     Export:
