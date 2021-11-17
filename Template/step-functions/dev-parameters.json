@@ -2,7 +2,7 @@
     "Parameters": [
         {
             "ParameterKey": "SystemName",
-            "ParameterValue": "JTB"
+            "ParameterValue": "Template"
         },
         {
             "ParameterKey": "EnvType",
@@ -19,14 +19,6 @@
         {
             "ParameterKey": "isAssignPublicIp",
             "ParameterValue": "ENABLED"
-        },
-        {
-            "ParameterKey": "SecurityGroups",
-            "ParameterValue": ""
-        },
-        {
-            "ParameterKey": "Subnets",
-            "ParameterValue": ""
         }
     ]
 }

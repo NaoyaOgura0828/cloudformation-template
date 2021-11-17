@@ -26,11 +26,6 @@ Parameters:
   isAssignPublicIp:
     Type: String
     AllowedValues: [ENABLED, DISABLED]
-  # TODO: 'sg', 'network'からImportするよう変更
-  SecurityGroups:
-    Type: String
-  Subnets:
-    Type: String
 
 Mappings:
   AzMap:
@@ -308,11 +303,15 @@ Resources:
             ACCOUNT_ID: !Ref AWS::AccountId,
             SYSTEM_NAME: !Ref SystemName,
             ENV_TYPE: !Ref EnvType,
-            ECS_TASK_DEF_ARN: !ImportValue ECSTaskDefinitionArn,
-            ECS_CLUSTER_ARN: !ImportValue ECSClusterArn,
+            ECS_TASK_DEF_ARN:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecr-def-arn'},
+            ECS_CLUSTER_ARN:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-cluster-arn'},
             iS_ASSIGN_PUBLIC_IP: !Ref isAssignPublicIp,
-            SECURITY_GROUPS: !Ref SecurityGroups,
-            SUBNETS: !Ref Subnets,
+            SECURITY_GROUPS:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-sg'},
+            SUBNETS:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-public-subnet1'},
           }
       RoleArn:
         Fn::ImportValue: !Sub
@@ -325,8 +324,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub
-          - ${SystemName}-${EnvType}-state-machine
-          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+            - ${SystemName}-${EnvType}-state-machine
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
@@ -601,11 +600,15 @@ Resources:
   #           ACCOUNT_ID: !Ref AWS::AccountId,
   #           SYSTEM_NAME: !Ref SystemName,
   #           ENV_TYPE: !Ref EnvType,
-  #           ECS_TASK_DEF_ARN: !ImportValue ECSTaskDefinitionArn,
-  #           ECS_CLUSTER_ARN: !ImportValue ECSClusterArn,
+  #           ECS_TASK_DEF_ARN:
+  #             {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecr-def-arn'},
+  #           ECS_CLUSTER_ARN:
+  #             {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-cluster-arn'},
   #           iS_ASSIGN_PUBLIC_IP: !Ref isAssignPublicIp,
-  #           SECURITY_GROUPS: !Ref SecurityGroups,
-  #           SUBNETS: !Ref Subnets,
+  #           SECURITY_GROUPS:
+  #             {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-sg'},
+  #           SUBNETS:
+  #             {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-private-subnet1'},
   #         }
   #     RoleArn:
   #       Fn::ImportValue: !Sub
@@ -618,9 +621,23 @@ Resources:
   #     Tags:
   #       - Key: Name
   #         Value: !Sub
-  #         - ${SystemName}-${EnvType}-state-machine
-  #         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  #           - ${SystemName}-${EnvType}-state-machine
+  #           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
   #       - Key: SystemName
   #         Value: !Ref SystemName
   #       - Key: EnvType
   #         Value: !Ref EnvType
+
+Outputs:
+  StepFunctionsStateMachineName:
+    Value: !GetAtt StepFunctionsStateMachine.Name
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-state-machine-name
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  StepFunctionsStateMachineArn:
+    Value: !Ref StepFunctionsStateMachine
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-state-machine-arn
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
