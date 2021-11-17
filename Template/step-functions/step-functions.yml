@@ -36,7 +36,7 @@ Mappings:
 
 Resources:
   # StateMachine 作成
-  # TODO:定義をシンプルに変更
+  # ECSRunTask (Timeout ReRun:5)
   StepFunctionsStateMachine:
     Type: AWS::StepFunctions::StateMachine
     Properties:
@@ -47,9 +47,9 @@ Resources:
         - |
           {
             "Comment": "ECSRunTask",
-            "StartAt": "ECSRunTask1",
+            "StartAt": "ECSRunTask",
             "States": {
-              "ECSRunTask1": {
+              "ECSRunTask": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::ecs:runTask",
                 "Parameters": {
@@ -64,7 +64,7 @@ Resources:
                     }
                   }
                 },
-                "Next": "isProcessSucceeded1",
+                "Next": "ECSRunTaskSuccess",
                 "Retry": [
                   {
                     "ErrorEquals": [
@@ -84,213 +84,10 @@ Resources:
                     "Next": "ECSRunTaskFail"
                   }
                 ]
-              },
-              "isProcessSucceeded1": {
-                "Type": "Choice",
-                "Choices": [
-                  {
-                    "Variable": "$",
-                    "NumericEquals": 0,
-                    "Next": "ECSRunTaskSuccess"
-                  }
-                ],
-                "Default": "ECSRunTask2"
-              },
-              "ECSRunTask2": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::ecs:runTask",
-                "Parameters": {
-                  "LaunchType": "FARGATE",
-                  "Cluster": "${ECS_CLUSTER_ARN}",
-                  "TaskDefinition": "${ECS_TASK_DEF_ARN}",
-                  "NetworkConfiguration": {
-                    "AwsvpcConfiguration": {
-                      "AssignPublicIp": "${iS_ASSIGN_PUBLIC_IP}",
-                      "SecurityGroups": ["${SECURITY_GROUPS}"],
-                      "Subnets": ["${SUBNETS}"]
-                    }
-                  }
-                },
-                "Next": "isProcessSucceeded2",
-                "Retry": [
-                  {
-                    "ErrorEquals": [
-                      "States.Timeout"
-                    ],
-                    "IntervalSeconds": 1,
-                    "BackoffRate": 1,
-                    "MaxAttempts": 5,
-                    "Comment": "ECSRunTaskTimeout"
-                  }
-                ],
-                "Catch": [
-                  {
-                    "ErrorEquals": [
-                      "States.ALL"
-                    ],
-                    "Next": "ECSRunTaskFail"
-                  }
-                ]
-              },
-              "isProcessSucceeded2": {
-                "Type": "Choice",
-                "Choices": [
-                  {
-                    "Variable": "$",
-                    "NumericEquals": 0,
-                    "Next": "ECSRunTaskSuccess"
-                  }
-                ],
-                "Default": "ECSRunTask3"
-              },
-              "ECSRunTask3": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::ecs:runTask",
-                "Parameters": {
-                  "LaunchType": "FARGATE",
-                  "Cluster": "${ECS_CLUSTER_ARN}",
-                  "TaskDefinition": "${ECS_TASK_DEF_ARN}",
-                  "NetworkConfiguration": {
-                    "AwsvpcConfiguration": {
-                      "AssignPublicIp": "${iS_ASSIGN_PUBLIC_IP}",
-                      "SecurityGroups": ["${SECURITY_GROUPS}"],
-                      "Subnets": ["${SUBNETS}"]
-                    }
-                  }
-                },
-                "Next": "isProcessSucceeded3",
-                "Retry": [
-                  {
-                    "ErrorEquals": [
-                      "States.Timeout"
-                    ],
-                    "IntervalSeconds": 1,
-                    "BackoffRate": 1,
-                    "MaxAttempts": 5,
-                    "Comment": "ECSRunTaskTimeout"
-                  }
-                ],
-                "Catch": [
-                  {
-                    "ErrorEquals": [
-                      "States.ALL"
-                    ],
-                    "Next": "ECSRunTaskFail"
-                  }
-                ]
-              },
-              "isProcessSucceeded3": {
-                "Type": "Choice",
-                "Choices": [
-                  {
-                    "Variable": "$",
-                    "NumericEquals": 0,
-                    "Next": "ECSRunTaskSuccess"
-                  }
-                ],
-                "Default": "ECSRunTask4"
-              },
-              "ECSRunTask4": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::ecs:runTask",
-                "Parameters": {
-                  "LaunchType": "FARGATE",
-                  "Cluster": "${ECS_CLUSTER_ARN}",
-                  "TaskDefinition": "${ECS_TASK_DEF_ARN}",
-                  "NetworkConfiguration": {
-                    "AwsvpcConfiguration": {
-                      "AssignPublicIp": "${iS_ASSIGN_PUBLIC_IP}",
-                      "SecurityGroups": ["${SECURITY_GROUPS}"],
-                      "Subnets": ["${SUBNETS}"]
-                    }
-                  }
-                },
-                "Next": "isProcessSucceeded4",
-                "Retry": [
-                  {
-                    "ErrorEquals": [
-                      "States.Timeout"
-                    ],
-                    "IntervalSeconds": 1,
-                    "BackoffRate": 1,
-                    "MaxAttempts": 5,
-                    "Comment": "ECSRunTaskTimeout"
-                  }
-                ],
-                "Catch": [
-                  {
-                    "ErrorEquals": [
-                      "States.ALL"
-                    ],
-                    "Next": "ECSRunTaskFail"
-                  }
-                ]
-              },
-              "isProcessSucceeded4": {
-                "Type": "Choice",
-                "Choices": [
-                  {
-                    "Variable": "$",
-                    "NumericEquals": 0,
-                    "Next": "ECSRunTaskSuccess"
-                  }
-                ],
-                "Default": "ECSRunTask5"
-              },
-              "ECSRunTask5": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::ecs:runTask",
-                "Parameters": {
-                  "LaunchType": "FARGATE",
-                  "Cluster": "${ECS_CLUSTER_ARN}",
-                  "TaskDefinition": "${ECS_TASK_DEF_ARN}",
-                  "NetworkConfiguration": {
-                    "AwsvpcConfiguration": {
-                      "AssignPublicIp": "${iS_ASSIGN_PUBLIC_IP}",
-                      "SecurityGroups": ["${SECURITY_GROUPS}"],
-                      "Subnets": ["${SUBNETS}"]
-                    }
-                  }
-                },
-                "Next": "isProcessSucceeded5",
-                "Retry": [
-                  {
-                    "ErrorEquals": [
-                      "States.Timeout"
-                    ],
-                    "IntervalSeconds": 1,
-                    "BackoffRate": 1,
-                    "MaxAttempts": 5,
-                    "Comment": "ECSRunTaskTimeout"
-                  }
-                ],
-                "Catch": [
-                  {
-                    "ErrorEquals": [
-                      "States.ALL"
-                    ],
-                    "Next": "ECSRunTaskFail"
-                  }
-                ]
-              },
-              "isProcessSucceeded5": {
-                "Type": "Choice",
-                "Choices": [
-                  {
-                    "Variable": "$",
-                    "NumericEquals": 0,
-                    "Next": "ECSRunTaskSuccess"
-                  }
-                ],
-                "Default": "ProcessFail"
               },
               "ECSRunTaskFail": {
                 "Type": "Fail",
                 "Comment": "ECSRunTaskFail"
-              },
-              "ProcessFail": {
-                "Type": "Fail",
-                "Comment": "ProcessFail"
               },
               "ECSRunTaskSuccess": {
                 "Type": "Succeed",
