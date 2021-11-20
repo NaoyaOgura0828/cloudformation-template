@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: CodeCommit
+Description: CodeCommit for Template
 
 Parameters:
   SystemName:
