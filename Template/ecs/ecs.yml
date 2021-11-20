@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: ECS
+Description: ECS for Template
 
 Parameters:
   SystemName:
