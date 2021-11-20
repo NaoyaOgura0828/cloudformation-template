@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: EC2
+Description: EC2 for Template
 
 Parameters:
   SystemName:
@@ -55,18 +55,26 @@ Resources:
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       SubnetId:
         Fn::ImportValue: !Sub
-          - ${SystemName}-${EnvType}-public-subnet
+          - ${SystemName}-${EnvType}-public-subnet1
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       Tenancy: default
       EbsOptimized: false
       SourceDestCheck: true
       BlockDeviceMappings:
+        # OSによって適宜変更
         - DeviceName: '/dev/xvda'
           Ebs:
             Encrypted: !Ref IsEncrypted
             VolumeSize: !Ref VolumeSize
             VolumeType: !Ref VolumeType
             DeleteOnTermination: true
+        # OSによって適宜変更
+        # - DeviceName: '/dev/sda1'
+        #   Ebs:
+        #     Encrypted: !Ref IsEncrypted
+        #     VolumeSize: !Ref VolumeSize
+        #     VolumeType: !Ref VolumeType
+        #     DeleteOnTermination: true
       HibernationOptions:
         Configured: false
       EnclaveOptions:
