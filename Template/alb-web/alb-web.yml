@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ALB-Web
+Description: ALB-Web for Template
 
 Parameters:
   SystemName:
