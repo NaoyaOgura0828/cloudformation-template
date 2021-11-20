@@ -62,10 +62,11 @@
         },
         {
             "ParameterKey": "KeyName",
-            "ParameterValue": "template-dev"
+            "ParameterValue": "Template-dev"
         },
         {
             "ParameterKey": "EfsMountPath",
             "ParameterValue": "efs-mntp"
         }
+    ]
 }
