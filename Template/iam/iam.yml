@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: IAM
+Description: IAM for Template
 
 Parameters:
   SystemName:
@@ -63,6 +63,46 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
+
+  # EC2 ロール作成
+  RoleEC2:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub
+        - ${SystemName}-${EnvType}-role-ec2-${AWS::Region}
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Description: !Sub
+        - ${SystemName}-${EnvType}-role-ec2-${AWS::Region}
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-role-ec2-${AWS::Region}
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+  # EC2 プロファイル作成
+  InstanceProfileEC2:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub
+        - ${SystemName}-${EnvType}-profile-ec2-${AWS::Region}
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Path: /
+      Roles:
+        - !Ref RoleEC2
 
   # EC2 Bastion ロール作成
   RoleBastion:
@@ -433,6 +473,12 @@ Outputs:
     Export:
       Name: !Sub
         - ${SystemName}-${EnvType}-role-vpc-flowlog-${AWS::Region}
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  InstanceProfileEC2:
+    Value: !Ref InstanceProfileEC2
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-profile-ec2-${AWS::Region}
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
   InstanceProfileBastion:
     Value: !Ref InstanceProfileBastion
