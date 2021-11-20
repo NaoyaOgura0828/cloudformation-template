@@ -38,7 +38,7 @@
         },
         {
             "ParameterKey": "KeyName",
-            "ParameterValue": "template-stg"
+            "ParameterValue": "Template-stg"
         },
         {
             "ParameterKey": "PHPVer",

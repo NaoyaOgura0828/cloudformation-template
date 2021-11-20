@@ -38,7 +38,7 @@
         },
         {
             "ParameterKey": "KeyName",
-            "ParameterValue": "template-prod"
+            "ParameterValue": "Template-prod"
         },
         {
             "ParameterKey": "PHPVer",
