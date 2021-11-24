@@ -7,14 +7,6 @@
         {
             "ParameterKey": "EnvType",
             "ParameterValue": "stg"
-        },
-        {
-            "ParameterKey": "RepositoryName",
-            "ParameterValue": "TemplateRepository"
-        },
-        {
-            "ParameterKey": "RepositoryDescription",
-            "ParameterValue": "TemplateRepositoryDescription"
         }
     ]
 }

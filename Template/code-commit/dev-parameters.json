@@ -7,14 +7,6 @@
         {
             "ParameterKey": "EnvType",
             "ParameterValue": "dev"
-        },
-        {
-            "ParameterKey": "RepositoryName",
-            "ParameterValue": "TemplateRepository"
-        },
-        {
-            "ParameterKey": "RepositoryDescription",
-            "ParameterValue": "TemplateRepositoryDescription"
         }
     ]
 }
