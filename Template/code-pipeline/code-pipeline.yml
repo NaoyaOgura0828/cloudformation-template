@@ -64,11 +64,12 @@ Resources:
 
 
   # CodePipeline 作成
-  CodePipeline:
+  # Template
+  CodePipelineTemplate: # リソース名適宜変更
     Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: !Sub
-        - ${SystemName}-${EnvType}-code-pipeline
+        - ${SystemName}-${EnvType}-code-pipeline-template # Pipeline名を設定
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       RoleArn:
         Fn::ImportValue: !Sub
@@ -78,6 +79,7 @@ Resources:
         Type: S3
         Location: !Ref S3BucketCodePipeline
       Stages:
+        # Source 設定
         - Name: Source
           Actions:
             - Name: Source
@@ -89,7 +91,7 @@ Resources:
               Configuration:
                 RepositoryName:
                   Fn::ImportValue: !Sub
-                    - ${SystemName}-${EnvType}-code-commit-repo-name
+                    - ${SystemName}-${EnvType}-code-commit-repo-template-name # Repository名を設定
                     - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
                 PollForSourceChanges: true
                 BranchName: !Ref BranchName
@@ -99,13 +101,10 @@ Resources:
                 - Name: SourceArtifact
               Region: !Ref AWS::Region
               Namespace: SourceVariables
-        - Name: !Sub
-            - ${SystemName}-${EnvType}-approval-notification
-            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        # ApprovalNotification 設定
+        - Name: ApprovalNotification
           Actions:
-            - Name: !Sub
-                - ${SystemName}-${EnvType}-approval-notification
-                - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+            - Name: ApprovalNotification
               ActionTypeId:
                 Category: Approval
                 Owner: AWS
@@ -114,11 +113,11 @@ Resources:
               Configuration:
                 NotificationArn:
                   Fn::ImportValue: !Sub
-                    - ${SystemName}-${EnvType}-sns-topic
+                    - ${SystemName}-${EnvType}-sns-topic-template # SNStopic名を設定
                     - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
               RunOrder: 1
               Region: !Ref AWS::Region
-
+        # Build 設定
         - Name: Build
           Actions:
             - Name: Build
@@ -130,7 +129,7 @@ Resources:
               Configuration:
                 ProjectName:
                   Fn::ImportValue: !Sub
-                    - ${SystemName}-${EnvType}-code-build
+                    - ${SystemName}-${EnvType}-code-build-template # BuildProject名を設定
                     - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
               InputArtifacts:
                 - Name: SourceArtifact
@@ -142,9 +141,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub
-            - ${SystemName}-${EnvType}-code-pipeline
+            - ${SystemName}-${EnvType}-code-pipeline-template # Pipeline名と一致推奨
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
+  # ↓追加PipelineのResources
