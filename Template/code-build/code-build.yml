@@ -20,9 +20,6 @@ Parameters:
     Description: Enables running the Docker daemon inside a Docker container.
     Type: String
     AllowedValues: [true, false]
-  ECRRepositoryName:
-    Description: RepositoryName.
-    Type: String
   TimeoutInMinutes:
     Description: Time to wait before timeout related builds that were not marked as complete..
     Type: Number
@@ -43,11 +40,12 @@ Mappings:
 
 Resources:
   # CodeBuildProject 作成
-  CodeBuildProject:
+  # Template
+  CodeBuildProjectTemplate: # リソース名適宜変更
     Type: AWS::CodeBuild::Project
     Properties:
       Name: !Sub
-        - ${SystemName}-${EnvType}-code-build
+        - ${SystemName}-${EnvType}-code-build-template # BuildProject名を設定
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       Artifacts:
         Type: NO_ARTIFACTS
@@ -65,13 +63,14 @@ Resources:
             Value: !Sub  ${AWS::AccountId}
           - Name: IMAGE_TAG
             Type: PLAINTEXT
-            Value: latest
+            Value: latest # latest指定で最新IMAGE
           - Name: IMAGE_REPO_NAME
             Type: PLAINTEXT
-            Value: !Ref ECRRepositoryName
+            Value:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecr-template'} # ECR名を設定
           - Name: CONTAINER_NAME
             Type: PLAINTEXT
-            Value: !Sub ${SystemName}-${EnvType}-ecs-container
+            Value: !Sub ${SystemName}-${EnvType}-ecs-container-template # コンテナ名を設定
       ServiceRole:
         Fn::ImportValue: !Sub
           - ${SystemName}-${EnvType}-role-code-build-${AWS::Region}
@@ -81,7 +80,7 @@ Resources:
         GitCloneDepth: 1
         Location:
           Fn::ImportValue:
-            !Sub ${SystemName}-${EnvType}-code-commit-repo-url
+            !Sub ${SystemName}-${EnvType}-code-commit-repo-template-url # CodeCommitのurlを設定
       TimeoutInMinutes: !Ref TimeoutInMinutes
       QueuedTimeoutInMinutes: !Ref QueuedTimeoutInMinutes
       LogsConfig:
@@ -90,17 +89,20 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub
-            - ${SystemName}-${EnvType}-code-build
+            - ${SystemName}-${EnvType}-code-build-template # BuildProject名と一致推奨
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
+  # ↓追加BuildProjectのResources
 
 Outputs:
-  CodeBuildProject:
-    Value: !Ref CodeBuildProject
+  # Template
+  CodeBuildProjectTemplate: # リソース名
+    Value: !Ref CodeBuildProjectTemplate # リソース名
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-code-build
+        - ${SystemName}-${EnvType}-code-build-template # BuildProject名と一致推奨
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  # ↓追加BuildProjectのOutputs

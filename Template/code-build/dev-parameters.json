@@ -21,10 +21,6 @@
             "ParameterValue": "true"
         },
         {
-            "ParameterKey": "ECRRepositoryName",
-            "ParameterValue": "template-ecr"
-        },
-        {
             "ParameterKey": "TimeoutInMinutes",
             "ParameterValue": "60"
         },
