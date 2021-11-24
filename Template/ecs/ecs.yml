@@ -12,9 +12,6 @@ Parameters:
     Default: dev
     AllowedValues: [all, dev, stg, prod]
     ConstraintDescription: must specify all, dev, stg, or prod.
-  ContainerName:
-    Description: ContainerName.
-    Type: String
   isDisableNetworking:
     Description: Container Disable Networking.
     Type: String
@@ -28,17 +25,17 @@ Parameters:
   MemoryReservation:
     Description: Container MemoryReservation.
     Type: Number
-  TaskFamilyName:
-    Description: TaskFamilyName.
-    Type: String
-  VolumeName:
-    Description: VolumeName.
-    Type: String
-  CpuUnits:
-    Description: CpuUnits.
+  # TaskFamilyName:
+  #   Description: TaskFamilyName.
+  #   Type: String
+  # VolumeName:
+  #   Description: VolumeName.
+  #   Type: String
+  CpuNum:
+    Description: CpuNum.
     Type: Number
-  UsedMemory:
-    Description: UsedMemory.
+  MemoryAmounts:
+    Description: MemoryAmounts.
     Type: Number
 
 Mappings:
@@ -76,16 +73,17 @@ Resources:
           Value: !Ref EnvType
 
   # ECSTaskDefinition 作成
-  ECSTaskDefinition:
+  # Template
+  ECSTaskDefinitionTemplate: # リソース名適宜変更
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
-      - Name: !Ref ContainerName
+      - Name: TemplateContainer # Container名を指定
         DisableNetworking: !Ref isDisableNetworking
         Essential: !Ref isEssential
         Image:
           Fn::ImportValue: !Sub
-            - ${SystemName}-${EnvType}-ecr-uri
+            - ${SystemName}-${EnvType}-ecr-template-uri # ECRImageURIを指定
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         LogConfiguration:
           LogDriver: awslogs
@@ -94,28 +92,30 @@ Resources:
             awslogs-region: !Ref AWS::Region
             awslogs-stream-prefix: ecs
         MemoryReservation: !Ref MemoryReservation
-      Family: !Ref TaskFamilyName
+      Family: TemplateTask # Task名を指定
       ExecutionRoleArn:
         Fn::ImportValue: !Sub
           - ${SystemName}-${EnvType}-role-ecs-${AWS::Region}
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       NetworkMode: awsvpc
-      Volumes:
-        - Name: !Ref VolumeName
-          Host: {}
+      # 不使用の場合は削除
+      # Volumes:
+      #   - Name: TemplateVolume # Volume名を指定
+      #     Host: {}
       RequiresCompatibilities:
         - FARGATE
-      Cpu: !Ref CpuUnits
-      Memory: !Ref UsedMemory
+      Cpu: !Ref CpuNum
+      Memory: !Ref MemoryAmounts
       Tags:
         - Key: Name
           Value: !Sub
-            - ${SystemName}-${EnvType}-ecr-def
+            - ${SystemName}-${EnvType}-ecs-def-template # 末尾タスク定義名
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
+  # ↓追加ECSTaskDefinitionのResources
 
   # # ECSService 作成
   # ECSService:
@@ -145,15 +145,19 @@ Resources:
   #           Fn::ImportValue: !Sub ${ProjectName}-${Env}-alb-tg-arn
 
 Outputs:
+  # ECSCluster
   ECSClusterArn:
     Value: !GetAtt ECSCluster.Arn
     Export:
       Name: !Sub
         - ${SystemName}-${EnvType}-ecs-cluster-arn
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-  ECSTaskDefinitionArn:
-    Value: !Ref ECSTaskDefinition
+  # ECSTaskDefinition
+  # Template
+  ECSTaskDefinitionTemplateArn: # {リソース名} + 'Arn'
+    Value: !Ref ECSTaskDefinitionTemplate # リソース名
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-ecr-def-arn
+        - ${SystemName}-${EnvType}-ecs-def-template-arn # 末尾{タスク定義名} + '-arn'
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  # ↓追加ECSTaskDefinitionのOutputs

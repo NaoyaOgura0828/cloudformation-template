@@ -9,10 +9,6 @@
             "ParameterValue": "stg"
         },
         {
-            "ParameterKey": "ContainerName",
-            "ParameterValue": "template-container"
-        },
-        {
             "ParameterKey": "isDisableNetworking",
             "ParameterValue": "false"
         },
@@ -23,14 +19,6 @@
         {
             "ParameterKey": "MemoryReservation",
             "ParameterValue": "128"
-        },
-        {
-            "ParameterKey": "TaskFamilyName",
-            "ParameterValue": "template-task"
-        },
-        {
-            "ParameterKey": "VolumeName",
-            "ParameterValue": "template-volume"
         },
         {
             "ParameterKey": "CpuUnits",
