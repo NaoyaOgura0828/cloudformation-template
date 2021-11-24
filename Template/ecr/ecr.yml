@@ -11,9 +11,6 @@ Parameters:
     Default: dev
     AllowedValues: [all, dev, stg, prod]
     ConstraintDescription: must specify all, dev, stg, or prod.
-  ECRRepositoryName:
-    Description: RepositoryName.
-    Type: String
   isScanOnPush:
     Description: Enable ScanOnPush.
     Type: String
@@ -32,10 +29,11 @@ Mappings:
 
 Resources:
   # ECRRepository 作成
-  ECRRepository:
+  # Template
+  ECRRepositoryTemplate: # リソース名適宜変更
     Type: AWS::ECR::Repository
     Properties:
-      RepositoryName: !Ref ECRRepositoryName
+      RepositoryName: template # RepositoryName設定 (大文字不可)
       ImageScanningConfiguration:
         ScanOnPush: !Ref isScanOnPush
       LifecyclePolicy:
@@ -63,29 +61,32 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub
-          - ${SystemName}-${EnvType}-ecr
+          - ${SystemName}-${EnvType}-ecr-template # 末尾{RepositoryName}推奨
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
+  # ↓追加ECRRepositoryのResources
 
 Outputs:
-  ECRRepository:
-    Value: !Ref ECRRepository
+  # Template
+  ECRRepository: # リソース名
+    Value: !Ref ECRRepository # リソース名
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-ecr
+        - ${SystemName}-${EnvType}-ecr-template # 末尾{RepositoryName}推奨
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-  ECRRepositoryArn:
-    Value: !GetAtt ECRRepository.Arn
+  ECRRepositoryArn: # {リソース名} + 'Arn'
+    Value: !GetAtt ECRRepository.Arn # {リソース名}.Arn
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-ecr-arn
+        - ${SystemName}-${EnvType}-ecr-template-arn # 末尾{RepositoryName} + '-arn'
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-  ECRRepositoryRepositoryUri:
-    Value: !GetAtt ECRRepository.RepositoryUri
+  ECRRepositoryRepositoryUri: # {リソース名} + 'RepositoryUri'
+    Value: !GetAtt ECRRepository.RepositoryUri # {リソース名}.RepositoryUri
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-ecr-uri
+        - ${SystemName}-${EnvType}-ecr-template-uri # 末尾{RepositoryName} + '-uri'
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  # ↓追加ECRRepositoryのOutputs

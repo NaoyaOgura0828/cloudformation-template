@@ -9,10 +9,6 @@
             "ParameterValue": "stg"
         },
         {
-            "ParameterKey": "ECRRepositoryName",
-            "ParameterValue": "template-repository"
-        },
-        {
             "ParameterKey": "isScanOnPush",
             "ParameterValue": "true"
         },
