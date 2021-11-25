@@ -14,7 +14,7 @@
         },
         {
             "ParameterKey": "BranchName",
-            "ParameterValue": "main"
+            "ParameterValue": "master"
         }
     ]
 }
