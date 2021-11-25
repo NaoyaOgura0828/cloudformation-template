@@ -1,0 +1,24 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "isFifoTopic",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "SubscriptionProtocol",
+            "ParameterValue": "email"
+        },
+        {
+            "ParameterKey": "EndpointAddress",
+            "ParameterValue": "dev用メールアドレス"
+        }
+    ]
+}
