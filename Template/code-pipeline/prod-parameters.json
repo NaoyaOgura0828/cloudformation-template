@@ -9,6 +9,10 @@
             "ParameterValue": "prod"
         },
         {
+            "ParameterKey": "BucketName",
+            "ParameterValue": "template-prod-code-pipeline-s3-bucket"
+        },
+        {
             "ParameterKey": "BranchName",
             "ParameterValue": "main"
         }

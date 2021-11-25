@@ -9,6 +9,10 @@
             "ParameterValue": "stg"
         },
         {
+            "ParameterKey": "BucketName",
+            "ParameterValue": "template-stg-code-pipeline-s3-bucket"
+        },
+        {
             "ParameterKey": "BranchName",
             "ParameterValue": "main"
         }

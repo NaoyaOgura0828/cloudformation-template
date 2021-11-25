@@ -9,6 +9,10 @@
             "ParameterValue": "dev"
         },
         {
+            "ParameterKey": "BucketName",
+            "ParameterValue": "template-dev-code-pipeline-s3-bucket"
+        },
+        {
             "ParameterKey": "BranchName",
             "ParameterValue": "main"
         }

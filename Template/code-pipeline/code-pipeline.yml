@@ -10,6 +10,9 @@ Parameters:
     Type: String
     AllowedValues: [all, dev, stg, prod]
     ConstraintDescription: must specify all, dev, stg, or prod.
+  BucketName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
   BranchName:
     Type: String
 
@@ -26,18 +29,14 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete # 本番環境ではRetain
     Properties:
-      BucketName: !Sub
-        - ${SystemName}-${EnvType}-code-pipeline-S3-bucket
-        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      BucketName: !Ref BucketName
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       Tags:
         - Key: Name
-          Value: !Sub
-            - ${SystemName}-${EnvType}-code-pipeline-S3-bucket
-            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+          Value: !Ref BucketName
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
