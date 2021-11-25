@@ -60,18 +60,18 @@ create_change_set () {
 # create_change_set waf-api
 
 #####################################
-# CI/CD
-#####################################
-# create_change_set sns
-# create_change_set code-commit
-# create_change_set code-pipeline
-# create_change_set code-build
-
-#####################################
 # Container
 #####################################
 # create_change_set ecr
 # create_change_set ecs
 # create_change_set step-functions
+
+#####################################
+# CI/CD
+#####################################
+# create_change_set sns
+# create_change_set code-commit
+# create_change_set code-build
+# create_change_set code-pipeline
 
 exit 0

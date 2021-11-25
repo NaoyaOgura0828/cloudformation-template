@@ -59,18 +59,18 @@ create_stack () {
 # create_stack waf-api
 
 #####################################
-# CI/CD
-#####################################
-# create_stack sns
-# create_stack code-commit
-# create_stack code-pipeline
-# create_stack code-build
-
-#####################################
 # Container
 #####################################
 # create_stack ecr
 # create_stack ecs
 # create_stack step-functions
+
+#####################################
+# CI/CD
+#####################################
+# create_stack sns
+# create_stack code-commit
+# create_stack code-build
+# create_stack code-pipeline
 
 exit 0
