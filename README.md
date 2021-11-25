@@ -335,6 +335,7 @@
     参考URL:
     <br>
     https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets-execute.html
+- 2021-11-25現在`import_acm.sh`は未実装
 
 <br>
 
