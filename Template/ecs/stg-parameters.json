@@ -21,11 +21,11 @@
             "ParameterValue": "128"
         },
         {
-            "ParameterKey": "CpuUnits",
+            "ParameterKey": "CpuNum",
             "ParameterValue": "256"
         },
         {
-            "ParameterKey": "UsedMemory",
+            "ParameterKey": "MemoryAmounts",
             "ParameterValue": "512"
         }
     ]

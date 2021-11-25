@@ -25,12 +25,6 @@ Parameters:
   MemoryReservation:
     Description: Container MemoryReservation.
     Type: Number
-  # TaskFamilyName:
-  #   Description: TaskFamilyName.
-  #   Type: String
-  # VolumeName:
-  #   Description: VolumeName.
-  #   Type: String
   CpuNum:
     Description: CpuNum.
     Type: Number
