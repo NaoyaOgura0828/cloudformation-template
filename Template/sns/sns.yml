@@ -66,16 +66,16 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: !Sub
-        - ${SystemName}-${EnvType}-sns-template # 末尾リソース名
+        - ${SystemName}-${EnvType}-sns-topic-template # 末尾リソース名
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       DisplayName: !Sub
-        - ${SystemName}-${EnvType}-sns-template # 末尾リソース名
+        - ${SystemName}-${EnvType}-sns-topic-template # 末尾リソース名
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       FifoTopic: !Ref isFifoTopic
       Tags:
         - Key: Name
           Value: !Sub
-            - ${SystemName}-${EnvType}-sns-template # 末尾リソース名
+            - ${SystemName}-${EnvType}-sns-topic-template # 末尾リソース名
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
@@ -88,5 +88,5 @@ Outputs:
     Value: !Ref SNSTopicTemplate # {リソース名}
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-sns-template # 末尾リソース名
+        - ${SystemName}-${EnvType}-sns-topic-template # 末尾リソース名
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
