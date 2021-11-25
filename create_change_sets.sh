@@ -62,6 +62,7 @@ create_change_set () {
 #####################################
 # CI/CD
 #####################################
+# create_change_set sns
 # create_change_set code-commit
 # create_change_set code-pipeline
 # create_change_set code-build
@@ -72,5 +73,5 @@ create_change_set () {
 # create_change_set ecr
 # create_change_set ecs
 # create_change_set step-functions
-# create_change_set sns
+
 exit 0

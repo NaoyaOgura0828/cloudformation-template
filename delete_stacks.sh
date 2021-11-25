@@ -29,7 +29,6 @@ delete_stack () {
 #####################################
 # Container
 #####################################
-# delete_stack sns
 # delete_stack step-functions
 # delete_stack ecs
 # delete_stack ecr
@@ -40,6 +39,7 @@ delete_stack () {
 # delete_stack code-build
 # delete_stack code-pipeline
 # delete_stack code-commit
+# delete_stack sns
 
 #####################################
 # API

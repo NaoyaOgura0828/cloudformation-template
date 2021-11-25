@@ -61,6 +61,7 @@ create_stack () {
 #####################################
 # CI/CD
 #####################################
+# create_stack sns
 # create_stack code-commit
 # create_stack code-pipeline
 # create_stack code-build
@@ -71,6 +72,5 @@ create_stack () {
 # create_stack ecr
 # create_stack ecs
 # create_stack step-functions
-# create_stack sns
 
 exit 0
