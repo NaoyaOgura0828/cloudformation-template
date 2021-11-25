@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 . ./.env_vars
 
@@ -16,11 +16,19 @@ SYSTEM_NAME=Template
 ENV_TYPE=$1
 
 aws ssm delete-parameter \
-    --name ${SYSTEM_NAME}-${ENV_TYPE}-db-user \
+    --name  ${SYSTEM_NAME}-${ENV_TYPE}-db-user \
     --profile ${SYSTEM_NAME}-${ENV_TYPE}
 
 aws ssm delete-parameter \
-    --name ${SYSTEM_NAME}-${ENV_TYPE}-db-pass \
+    --name  ${SYSTEM_NAME}-${ENV_TYPE}-db-pass \
+    --profile ${SYSTEM_NAME}-${ENV_TYPE}
+
+aws ssm delete-parameter \
+    --name ${SYSTEM_NAME}-${ENV_TYPE}-dockerhub-user \
+    --profile ${SYSTEM_NAME}-${ENV_TYPE}
+
+aws ssm delete-parameter \
+    --name ${SYSTEM_NAME}-${ENV_TYPE}-dockerhub-pass \
     --profile ${SYSTEM_NAME}-${ENV_TYPE}
 
 exit 0
