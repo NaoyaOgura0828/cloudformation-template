@@ -71,20 +71,20 @@ Resources:
 
 Outputs:
   # Template
-  ECRRepository: # リソース名
-    Value: !Ref ECRRepository # リソース名
+  ECRRepositoryTemplate: # リソース名
+    Value: !Ref ECRRepositoryTemplate # リソース名
     Export:
       Name: !Sub
         - ${SystemName}-${EnvType}-ecr-template # 末尾{RepositoryName}推奨
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-  ECRRepositoryArn: # {リソース名} + 'Arn'
-    Value: !GetAtt ECRRepository.Arn # {リソース名}.Arn
+  ECRRepositoryTemplateArn: # {リソース名} + 'Arn'
+    Value: !GetAtt ECRRepositoryTemplate.Arn # {リソース名}.Arn
     Export:
       Name: !Sub
         - ${SystemName}-${EnvType}-ecr-template-arn # 末尾{RepositoryName} + '-arn'
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-  ECRRepositoryRepositoryUri: # {リソース名} + 'RepositoryUri'
-    Value: !GetAtt ECRRepository.RepositoryUri # {リソース名}.RepositoryUri
+  ECRRepositoryTemplateRepositoryUri: # {リソース名} + 'RepositoryUri'
+    Value: !GetAtt ECRRepositoryTemplate.RepositoryUri # {リソース名}.RepositoryUri
     Export:
       Name: !Sub
         - ${SystemName}-${EnvType}-ecr-template-uri # 末尾{RepositoryName} + '-uri'
