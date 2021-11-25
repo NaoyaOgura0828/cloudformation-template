@@ -36,12 +36,13 @@ Mappings:
 
 Resources:
   # StateMachine 作成
+  # Template
   # ECSRunTask (Timeout ReRun:5)
-  StepFunctionsStateMachine:
+  StepFunctionsStateMachineTemplate: # リソース名適宜変更
     Type: AWS::StepFunctions::StateMachine
     Properties:
       StateMachineName: !Sub
-        - ${SystemName}-${EnvType}-state-machine
+        - ${SystemName}-${EnvType}-state-machine-template # 末尾リソース名
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       DefinitionString: !Sub
         - |
@@ -101,14 +102,14 @@ Resources:
             SYSTEM_NAME: !Ref SystemName,
             ENV_TYPE: !Ref EnvType,
             ECS_TASK_DEF_ARN:
-              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecr-def-arn'},
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-def-template-arn'}, # タスク定義設定
             ECS_CLUSTER_ARN:
-              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-cluster-arn'},
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-cluster-arn'}, # ECSクラスター設定
             iS_ASSIGN_PUBLIC_IP: !Ref isAssignPublicIp,
             SECURITY_GROUPS:
               {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-sg'},
             SUBNETS:
-              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-public-subnet1'},
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-public-subnet1'}, # サブネット設定
           }
       RoleArn:
         Fn::ImportValue: !Sub
@@ -121,7 +122,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub
-            - ${SystemName}-${EnvType}-state-machine
+            - ${SystemName}-${EnvType}-state-machine-template # 末尾リソース名
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
@@ -131,11 +132,11 @@ Resources:
   # # StateMachine 作成
   # # Taskのエラーを判定する
   # # Taskが'0'を出力しなければ成功と判定しない
-  # StepFunctionsStateMachine:
+  # StepFunctionsStateMachineTemplate2:
   #   Type: AWS::StepFunctions::StateMachine
   #   Properties:
   #     StateMachineName: !Sub
-  #       - ${SystemName}-${EnvType}-state-machine
+  #       - ${SystemName}-${EnvType}-state-machine-template2
   #       - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
   #     DefinitionString: !Sub
   #       - |
@@ -418,23 +419,26 @@ Resources:
   #     Tags:
   #       - Key: Name
   #         Value: !Sub
-  #           - ${SystemName}-${EnvType}-state-machine
+  #           - ${SystemName}-${EnvType}-state-machine-template2
   #           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
   #       - Key: SystemName
   #         Value: !Ref SystemName
   #       - Key: EnvType
   #         Value: !Ref EnvType
+  # ↓追加ECSTaskDefinitionのResources
 
 Outputs:
-  StepFunctionsStateMachineName:
-    Value: !GetAtt StepFunctionsStateMachine.Name
+  # Template
+  StepFunctionsStateMachineTemplateName: # {リソース名} + 'Name'
+    Value: !GetAtt StepFunctionsStateMachineTemplate.Name # {リソース名}.Name
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-state-machine-name
+        - ${SystemName}-${EnvType}-state-machine-template-name # {末尾リソース名} + "-name"
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-  StepFunctionsStateMachineArn:
-    Value: !Ref StepFunctionsStateMachine
+  StepFunctionsStateMachineTemplateArn: # {リソース名} + 'Arn'
+    Value: !Ref StepFunctionsStateMachineTemplate # リソース名
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-state-machine-arn
+        - ${SystemName}-${EnvType}-state-machine-template-arn # {末尾リソース名} + "-arn"
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  # ↓追加ECSTaskDefinitionのOutputs
