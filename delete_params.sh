@@ -15,18 +15,22 @@ cd `dirname $0`
 SYSTEM_NAME=Template
 ENV_TYPE=$1
 
+# DB_USER
 aws ssm delete-parameter \
     --name  ${SYSTEM_NAME}-${ENV_TYPE}-db-user \
     --profile ${SYSTEM_NAME}-${ENV_TYPE}
 
+# DB_PASS
 aws ssm delete-parameter \
     --name  ${SYSTEM_NAME}-${ENV_TYPE}-db-pass \
     --profile ${SYSTEM_NAME}-${ENV_TYPE}
 
+# DOCKERHUB_USER
 aws ssm delete-parameter \
     --name ${SYSTEM_NAME}-${ENV_TYPE}-dockerhub-user \
     --profile ${SYSTEM_NAME}-${ENV_TYPE}
 
+# DOCKERHUB_PASS
 aws ssm delete-parameter \
     --name ${SYSTEM_NAME}-${ENV_TYPE}-dockerhub-pass \
     --profile ${SYSTEM_NAME}-${ENV_TYPE}
