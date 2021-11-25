@@ -21,7 +21,7 @@ Mappings:
 
 Resources:
   # SecurityGroup for EC2
-  SecurityGroupec2:
+  SecurityGroupEC2:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: !Sub
