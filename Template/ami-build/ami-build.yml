@@ -1,0 +1,240 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AMI-Build for Template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues: [all, dev, stg, prod]
+    ConstraintDescription: must specify all, dev, stg, or prod.
+  RecipeVer:
+    Type: String
+  CompVer:
+    Type: String
+  Platform:
+    Type: String
+  InstanceType:
+    Type: String
+  IsEncrypted:
+    Type: String
+  VolumeSize:
+    Type: Number
+  VolumeType:
+    Type: String
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  PHPVer:
+    Type: String
+    AllowedValues: [7.2, 7.3, 7.4, 8.0]
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # ImagePipeline 作成
+  ImageBuilderImagePipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-pipe
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Description: !Sub
+        - ${SystemName}-${EnvType}-ami-pipe
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      ImageRecipeArn: !GetAtt ImageBuilderImageRecipe.Arn
+      InfrastructureConfigurationArn: !GetAtt ImageBuilderInfrastructureConfiguration.Arn
+      DistributionConfigurationArn: !GetAtt ImageBuilderDistributionConfiguration.Arn
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: 720
+      Status: ENABLED
+      Tags:
+        Name: !Sub
+          - ${SystemName}-${EnvType}-ami-pipe
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        SystemName: !Ref SystemName
+        EnvType: !Ref EnvType
+
+  # ImageRecipe 作成
+  ImageBuilderImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-recipe
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Description: !Sub
+        - ${SystemName}-${EnvType}-ami-recipe
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Version: !Ref RecipeVer
+      Components:
+        - ComponentArn: !GetAtt ImageBuilderComponent.Arn
+        - ComponentArn: !Sub arn:aws:imagebuilder:ap-northeast-1:aws:component/amazon-cloudwatch-agent-linux/x.x.x
+      ParentImage: !Sub arn:aws:imagebuilder:${AWS::Region}:aws:image/amazon-linux-2-x86/x.x.x
+      BlockDeviceMappings:
+      -
+        DeviceName: '/dev/xvda'
+        Ebs:
+          DeleteOnTermination: true
+          Encrypted: !Ref IsEncrypted
+          VolumeSize: !Ref VolumeSize
+          VolumeType: !Ref VolumeType
+      Tags:
+        Name: !Sub
+          - ${SystemName}-${EnvType}-ami-recipe
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        SystemName: !Ref SystemName
+        EnvType: !Ref EnvType
+
+  # Component 作成
+  ImageBuilderComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-comp
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Description: !Sub
+        - ${SystemName}-${EnvType}-ami-comp
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Version: !Ref CompVer
+      Platform: !Ref Platform
+      Data: !Sub |
+        name: Application Install
+        description: yum update, Nginx, php
+        schemaVersion: 1.0
+
+        phases:
+          - name: build
+            steps:
+              - name: Install
+                action: ExecuteBash
+                inputs:
+                  commands:
+                    - sudo yum update -y
+                    - sudo amazon-linux-extras install php${PHPVer} -y
+                    - sudo amazon-linux-extras install nginx1 -y
+                    - sudo amazon-linux-extras install lamp-mariadb10.2-php7.2 -y
+                    - sudo yum install mariadb-server -y
+                    - sudo systemctl start nginx
+                    - sudo systemctl enable nginx
+                    - sudo yum install amazon-efs-utils -y
+                    - sudo php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+                    - sudo php -r "if (hash_file('sha384', 'composer-setup.php') === '906a84df04cea2aa72f40b5f787e49f22d4c2f19492ac310e8cba5b96ac8b64115ac402c8cd292b8a03482574915d1a8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+                    - sudo php composer-setup.php
+                    - sudo php -r "unlink('composer-setup.php');"
+                    - sudo mv composer.phar /usr/local/bin/composer
+                    - sudo amazon-linux-extras install epel -y
+                    - sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+                    - sudo yum -y install php72-php-pecl-redis4.x86_64
+                    - sudo ln -s /opt/remi/php72/root/usr/lib64/php/modules/redis.so /usr/lib64/php/modules
+                    - sudo ln -s /opt/remi/php72/root/usr/lib64/php/modules/igbinary.so /usr/lib64/php/modules
+      Tags:
+        Name: !Sub
+          - ${SystemName}-${EnvType}-ami-comp
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        SystemName: !Ref SystemName
+        EnvType: !Ref EnvType
+
+  # DistributionConfiguration 作成
+  ImageBuilderDistributionConfiguration:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-dist
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Description: !Sub
+        - ${SystemName}-${EnvType}-ami-dist
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Distributions:
+        - Region: !Ref AWS::Region
+          AmiDistributionConfiguration:
+            description: !Sub
+              - ${SystemName}-${EnvType}-ami-dist
+              - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+            amiTags:
+              Name: !Sub
+                - ${SystemName}-${EnvType}-ami-dist
+                - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+              SystemName: !Ref SystemName
+              EnvType: !Ref EnvType
+      Tags:
+        Name: !Sub
+          - ${SystemName}-${EnvType}-ami-dist
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        SystemName: !Ref SystemName
+        EnvType: !Ref EnvType
+
+  # InfrastructureConfiguration 作成
+  ImageBuilderInfrastructureConfiguration:
+    Type: AWS::ImageBuilder::InfrastructureConfiguration
+    Properties:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-infra
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Description: !Sub
+        - ${SystemName}-${EnvType}-ami-infra
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      InstanceTypes:
+        - !Ref InstanceType
+      InstanceProfileName:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-profile-ami-build-${AWS::Region}
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-bastion-sg
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SubnetId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-public-subnet1
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Logging:
+        S3Logs: {}
+      KeyPair: !Ref KeyName
+      TerminateInstanceOnFailure: true
+      Tags:
+        Name: !Sub
+          - ${SystemName}-${EnvType}-ami-infra
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        SystemName: !Ref SystemName
+        EnvType: !Ref EnvType
+
+Outputs:
+  ImageBuilderImagePipeline:
+    Value: !Ref ImageBuilderImagePipeline
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-pipe
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  ImageBuilderImageRecipe:
+    Value: !Ref ImageBuilderImageRecipe
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-recipe
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  ImageBuilderComponent:
+    Value: !Ref ImageBuilderComponent
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-comp
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  ImageBuilderDistributionConfiguration:
+    Value: !Ref ImageBuilderDistributionConfiguration
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-dist
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  ImageBuilderInfrastructureConfiguration:
+    Value: !Ref ImageBuilderInfrastructureConfiguration
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-ami-infra
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}

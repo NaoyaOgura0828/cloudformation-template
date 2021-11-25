@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CodePipeline for Template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues: [all, dev, stg, prod]
+    ConstraintDescription: must specify all, dev, stg, or prod.
+  BranchName:
+    Type: String
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # S3バケット 作成
+  S3BucketCodePipeline:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete # 本番環境ではRetain
+    Properties:
+      BucketName: !Sub
+        - ${SystemName}-${EnvType}-code-pipeline-S3-bucket
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-code-pipeline-S3-bucket
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+  # S3バケットポリシー 作成
+  S3BucketCodePipelinePolicy:
+    Type: AWS::S3::BucketPolicy
+    DependsOn: S3BucketCodePipeline
+    DeletionPolicy: Delete # 本番環境ではRetain
+    Properties:
+      Bucket: !Ref S3BucketCodePipeline
+      PolicyDocument:
+        Statement:
+          - Action: "s3:*"
+            Condition:
+              "Bool":
+                aws:SecureTransport: false
+            Effect: Deny
+            Principal: "*"
+            Resource:
+              - !Sub "arn:${AWS::Partition}:s3:::${S3BucketCodePipeline}"
+              - !Sub "arn:${AWS::Partition}:s3:::${S3BucketCodePipeline}/*"
+            Sid: AllowSSLRequestsOnly
+
+
+  # CodePipeline 作成
+  # Template
+  CodePipelineTemplate: # リソース名適宜変更
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-code-pipeline-template # Pipeline名を設定
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      RoleArn:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-role-code-pipeline-${AWS::Region}
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      ArtifactStore:
+        Type: S3
+        Location: !Ref S3BucketCodePipeline
+      Stages:
+        # Source 設定
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: CodeCommit
+              Configuration:
+                RepositoryName:
+                  Fn::ImportValue: !Sub
+                    - ${SystemName}-${EnvType}-code-commit-repo-template-name # Repository名を設定
+                    - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+                PollForSourceChanges: true
+                BranchName: !Ref BranchName
+                OutputArtifactFormat: CODE_ZIP
+              RunOrder: 1
+              OutputArtifacts:
+                - Name: SourceArtifact
+              Region: !Ref AWS::Region
+              Namespace: SourceVariables
+        # ApprovalNotification 設定
+        - Name: ApprovalNotification
+          Actions:
+            - Name: ApprovalNotification
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              Configuration:
+                NotificationArn:
+                  Fn::ImportValue: !Sub
+                    - ${SystemName}-${EnvType}-sns-topic-template # SNStopic名を設定
+                    - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+              RunOrder: 1
+              Region: !Ref AWS::Region
+        # Build 設定
+        - Name: Build
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName:
+                  Fn::ImportValue: !Sub
+                    - ${SystemName}-${EnvType}-code-build-template # BuildProject名を設定
+                    - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              Region: !Ref AWS::Region
+              Namespace: BuildVariables
+              RunOrder: 1
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-code-pipeline-template # Pipeline名と一致推奨
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+  # ↓追加PipelineのResources

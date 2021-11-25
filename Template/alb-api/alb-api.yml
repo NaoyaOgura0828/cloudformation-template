@@ -1,0 +1,289 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ALB-Api for Template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues: [dev, stg, prod]
+    ConstraintDescription: must specify dev stg or prod.
+  ServerHostName:
+    Type: String
+  TargetGroupHealthCheckPath:
+    Type: String
+  ListenerSslPolicy:
+    Type: String
+  AMIID:
+    Type: String
+    AllowedPattern: ami-[a-z0-9]*
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+  InstanceType2:
+    Description: EC2 instance type
+    Type: String
+  IsEncrypted:
+    Type: String
+  VolumeSize:
+    Type: Number
+  VolumeType:
+    Type: String
+  ASGMinAndDesiredSize:
+    Type: Number
+  ASGMaxSize:
+    Type: Number
+  OnDemandBaseCapacity:
+    Type: Number
+  OnDemandPercentageAboveBaseCapacity:
+    Type: Number
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  EfsMountPath:
+    Type: String
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3nd: ap-northeast-1d
+
+Resources:
+  # Api起動テンプレートの作成
+  ApiLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub
+        - ${SystemName}-${EnvType}-api-lnchtpl-${AMIID}
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType, AMIID: !Ref AMIID}
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: '/dev/xvda'
+            Ebs:
+              Encrypted: !Ref IsEncrypted
+              VolumeSize: !Ref VolumeSize
+              VolumeType: !Ref VolumeType
+              DeleteOnTermination: true
+        EbsOptimized: false
+        IamInstanceProfile:
+          Arn:
+            Fn::ImportValue: !Sub
+              - ${SystemName}-${EnvType}-profile-api-${AWS::Region}
+              - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        ImageId: !Ref AMIID
+        Monitoring:
+          Enabled: true
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-api-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        UserData:
+          Fn::Base64: !Sub
+            - |
+              #!/bin/bash -ex
+
+              # AZを調べる
+              AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+
+              export AWS_DEFAULT_REGION=${AWS::Region}
+
+              FILE_SYSTEM_ID=$(aws efs describe-file-systems --query 'FileSystems[].FileSystemId | [0]' --output text)
+
+              mkdir -p /home/ec2-user/${EFS_MOUNT_PATH}
+              sudo mount -t efs -o az=${!AZ},tls ${!FILE_SYSTEM_ID} /home/ec2-user/${EFS_MOUNT_PATH}
+
+              cat <<EOS | sudo tee -a /home/ec2-user/.bashrc
+              SERVERNAME=${SERVER_HOST_NAME}
+              IP_ADDRESS=\$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+              export PS1='\[\u@\${!SERVERNAME}(\${!IP_ADDRESS}) \w]$'
+              EOS
+            - {
+                EFS_MOUNT_PATH: !Ref EfsMountPath,
+                SERVER_HOST_NAME: !Ref ServerHostName
+              }
+
+  # ApiASG作成
+  ApiAutoScalingAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub
+        - ${SystemName}-${EnvType}-api-asg
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      MixedInstancesPolicy:
+        LaunchTemplate:
+          LaunchTemplateSpecification:
+            LaunchTemplateId: !Ref ApiLaunchTemplate
+            Version: !GetAtt ApiLaunchTemplate.LatestVersionNumber
+          Overrides:
+            - InstanceType: !Ref InstanceType
+            - InstanceType: !Ref InstanceType2
+        InstancesDistribution:
+          OnDemandAllocationStrategy: prioritized
+          OnDemandBaseCapacity: !Ref OnDemandBaseCapacity
+          OnDemandPercentageAboveBaseCapacity: !Ref OnDemandPercentageAboveBaseCapacity
+          SpotAllocationStrategy: capacity-optimized
+      MinSize: !Ref ASGMinAndDesiredSize
+      MaxSize: !Ref ASGMaxSize
+      DesiredCapacity: !Ref ASGMinAndDesiredSize
+      Cooldown: 300
+      AvailabilityZones:
+        - !FindInMap [AzMap, !Ref AWS::Region, 1st]
+        - !FindInMap [AzMap, !Ref AWS::Region, 2nd]
+      TargetGroupARNs:
+        - !Ref ApiTargetGroup80
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: 300
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-private-subnet1
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-private-subnet2
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      TerminationPolicies:
+        - Default
+      MetricsCollection:
+        - Granularity: 1Minute
+      CapacityRebalance: true
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-api-asg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+          PropagateAtLaunch: true
+        - Key: SystemName
+          Value: !Ref SystemName
+          PropagateAtLaunch: true
+        - Key: EnvType
+          Value: !Ref EnvType
+          PropagateAtLaunch: true
+
+  # ApiALB作成
+  ElasticLoadBalancerApi:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '3600'
+        - Key: routing.http.drop_invalid_header_fields.enabled
+          Value: true
+      Name: !Sub
+        - ${SystemName}-${EnvType}-api-alb
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Scheme: internet-facing
+      SecurityGroups:
+        - Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-api-alb-sg
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Subnets:
+        - Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-public-subnet1
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-public-subnet2
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+          - ${SystemName}-${EnvType}-api-alb
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+      Type: application
+
+  # ApiTargetGroup 作成
+  ApiTargetGroup80:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: !Ref TargetGroupHealthCheckPath
+      HealthCheckPort: traffic-port
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      Name: !Sub
+        - ${SystemName}-${EnvType}-api-tg-80
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Port: 80
+      Protocol: HTTP
+      Tags:
+        - Key: Name
+          Value: !Sub
+          - ${SystemName}-${EnvType}-api-tg-80
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+      # TargetGroupAttributes:
+      #   - Key: idle_timeout.timeout_seconds
+      #     Value: '3600'
+      # Targets:
+      #   - TargetDescription
+      TargetType: instance
+      UnhealthyThresholdCount: 2
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+
+  # # ALB リスナー443作成
+  # ALBListener443:
+  #   Type: AWS::ElasticLoadBalancingV2::Listener
+  #   Properties:
+  #     # Certificates:
+  #     #   - Fn::ImportValue: !Sub
+  #     #     - ${SystemName}-${EnvType}-acm
+  #     #     - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  #     DefaultActions:
+  #       - Type: forward
+  #         TargetGroupArn: !Ref TargetGroup443
+  #     LoadBalancerArn: !Ref ElasticLoadBalancerApi
+  #     Port: 443
+  #     Protocol: HTTPS
+  #     SslPolicy: !Ref ListenerSslPolicy
+
+  # ApiALB リスナー80作成
+  ApiALBListener80:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ApiTargetGroup80
+      # DefaultActions:
+      #   - Type: redirect
+      #     RedirectConfig:
+      #       Protocol: HTTPS
+      #       Port: 443
+      #       Host: '#{host}'
+      #       Path: '/#{path}'
+      #       Query: '#{query}'
+      #       StatusCode: HTTP_301
+      LoadBalancerArn: !Ref ElasticLoadBalancerApi
+      Port: 80
+      Protocol: HTTP
+
+Outputs:
+  ElasticLoadBalancerApi:
+    Value: !Ref ElasticLoadBalancerApi
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-api-alb
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  ElasticLoadBalancerApiDNS:
+    Value: !GetAtt ElasticLoadBalancerApi.DNSName
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-api-alb-dns
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}

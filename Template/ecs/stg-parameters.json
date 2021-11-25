@@ -1,0 +1,32 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "stg"
+        },
+        {
+            "ParameterKey": "isDisableNetworking",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isEssential",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "MemoryReservation",
+            "ParameterValue": "128"
+        },
+        {
+            "ParameterKey": "CpuNum",
+            "ParameterValue": "256"
+        },
+        {
+            "ParameterKey": "MemoryAmounts",
+            "ParameterValue": "512"
+        }
+    ]
+}

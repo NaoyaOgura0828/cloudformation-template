@@ -1,0 +1,36 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "stg"
+        },
+        {
+            "ParameterKey": "VPCCidrBlock",
+            "ParameterValue": "10.0.0.0/16"
+        },
+        {
+            "ParameterKey": "PublicSubnetCidrBlock1",
+            "ParameterValue": "10.0.1.0/24"
+        },
+        {
+            "ParameterKey": "PublicSubnetCidrBlock2",
+            "ParameterValue": "10.0.2.0/24"
+        },
+        {
+            "ParameterKey": "PrivateSubnetCidrBlock1",
+            "ParameterValue": "10.0.11.0/24"
+        },
+        {
+            "ParameterKey": "PrivateSubnetCidrBlock2",
+            "ParameterValue": "10.0.12.0/24"
+        },
+        {
+            "ParameterKey": "VPCLogGroupName",
+            "ParameterValue": "/template/vpcflow"
+        }
+    ]
+}

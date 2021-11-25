@@ -1,0 +1,24 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "stg"
+        },
+        {
+            "ParameterKey": "StateMachineType",
+            "ParameterValue": "STANDARD"
+        },
+        {
+            "ParameterKey": "isIncludeExecutionData",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isAssignPublicIp",
+            "ParameterValue": "ENABLED"
+        }
+    ]
+}
