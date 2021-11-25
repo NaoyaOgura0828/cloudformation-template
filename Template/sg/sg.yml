@@ -4,7 +4,6 @@ Description: SecurityGroup for Template
 Parameters:
   SystemName:
     Type: String
-    Default: xxxx
     AllowedPattern: '[a-zA-Z0-9-]*'
   EnvType:
     Description: Environment type.
