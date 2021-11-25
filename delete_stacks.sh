@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 . ./.env_vars
 
@@ -27,6 +27,21 @@ delete_stack () {
 }
 
 #####################################
+# Container
+#####################################
+# delete_stack sns
+# delete_stack step-functions
+# delete_stack ecs
+# delete_stack ecr
+
+#####################################
+# CI/CD
+#####################################
+# delete_stack code-build
+# delete_stack code-pipeline
+# delete_stack code-commit
+
+#####################################
 # API
 #####################################
 # delete_stack waf-api
@@ -42,9 +57,6 @@ delete_stack () {
 #####################################
 # 共通
 #####################################
-# delete_stack step-functions
-# delete_stack ecs
-# delete_stack ecr
 # aws ses delete-identity --identity {希望Emailアドレス: info@dev-template.dev}
 # aws ses delete-identity --identity {希望ドメイン: dev-template.dev}
 # delete_stack ses

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 . ./.env_vars
 
@@ -44,10 +44,6 @@ create_stack () {
 # create_stack route53
 # aws ses verify-domain-dkim --domain $(eval echo '$'${ENV_TYPE^^}'_DOMAIN') --profile ${SYSTEM_NAME}-${ENV_TYPE}
 # aws ses verify-email-identity --email-address $(eval echo '$'${ENV_TYPE^^}'_EMAIL_ADDRESS') --profile ${SYSTEM_NAME}-${ENV_TYPE}
-# create_stack ecr
-# create_stack ecs
-# create_stack step-functions
-
 
 #####################################
 # WEB/AP
@@ -61,5 +57,20 @@ create_stack () {
 # create_stack alb-api
 # create_stack apigw
 # create_stack waf-api
+
+#####################################
+# CI/CD
+#####################################
+# create_stack code-commit
+# create_stack code-pipeline
+# create_stack code-build
+
+#####################################
+# Container
+#####################################
+# create_stack ecr
+# create_stack ecs
+# create_stack step-functions
+# create_stack sns
 
 exit 0

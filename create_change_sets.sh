@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 . ./.env_vars
 
@@ -45,9 +45,6 @@ create_change_set () {
 # create_change_set redis
 # create_change_set vpn
 # create_change_set route53
-# create_change_set ecr
-# create_change_set ecs
-# create_change_set step-functions
 
 #####################################
 # WEB/AP
@@ -62,4 +59,18 @@ create_change_set () {
 # create_change_set apigw
 # create_change_set waf-api
 
+#####################################
+# CI/CD
+#####################################
+# create_change_set code-commit
+# create_change_set code-pipeline
+# create_change_set code-build
+
+#####################################
+# Container
+#####################################
+# create_change_set ecr
+# create_change_set ecs
+# create_change_set step-functions
+# create_change_set sns
 exit 0

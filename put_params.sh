@@ -17,6 +17,7 @@ ENV_TYPE=$1
 
 ./delete_params.sh ${ENV_TYPE}
 
+# DB_USER
 aws ssm put-parameter \
     --name  ${SYSTEM_NAME}-${ENV_TYPE}-db-user \
     --value $(eval echo '$'${ENV_TYPE^^}'_DB_USER') \
@@ -24,6 +25,7 @@ aws ssm put-parameter \
     --tags "Key=Name,Value= ${SYSTEM_NAME}-${ENV_TYPE}-db-user" "Key=SystemName,Value=${SYSTEM_NAME}" "Key=EnvType,Value=${ENV_TYPE}" \
     --profile ${SYSTEM_NAME}-${ENV_TYPE}
 
+# DB_PASS
 aws ssm put-parameter \
     --name  ${SYSTEM_NAME}-${ENV_TYPE}-db-pass \
     --value $(eval echo '$'${ENV_TYPE^^}'_DB_PASS') \
@@ -31,6 +33,7 @@ aws ssm put-parameter \
     --tags "Key=Name,Value= ${SYSTEM_NAME}-${ENV_TYPE}-db-pass" "Key=SystemName,Value=${SYSTEM_NAME}" "Key=EnvType,Value=${ENV_TYPE}" \
     --profile ${SYSTEM_NAME}-${ENV_TYPE}
 
+# DOCKERHUB_USER
 aws ssm put-parameter \
     --name ${SYSTEM_NAME}-${ENV_TYPE}-dockerhub-user \
     --value $(eval echo '$'${ENV_TYPE^^}'_DOCKERHUB_USER') \
@@ -38,6 +41,7 @@ aws ssm put-parameter \
     --tags "Key=Name,Value= ${SYSTEM_NAME}-${ENV_TYPE}-dockerhub-user" "Key=SystemName,Value=${SYSTEM_NAME}" "Key=EnvType,Value=${ENV_TYPE}" \
     --profile ${SYSTEM_NAME}-${ENV_TYPE}
 
+# DOCKERHUB_PASS
 aws ssm put-parameter \
     --name ${SYSTEM_NAME}-${ENV_TYPE}-dockerhub-pass \
     --value $(eval echo '$'${ENV_TYPE^^}'_DOCKERHUB_PASS') \
