@@ -34,6 +34,7 @@ create_change_set () {
 #####################################
 # 共通
 #####################################
+# create_change_set iam
 # create_change_set network
 # create_change_set sg
 # create_change_set ami-build

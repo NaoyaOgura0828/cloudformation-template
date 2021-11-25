@@ -72,5 +72,6 @@ delete_stack () {
 # delete_stack ami-build
 # delete_stack sg
 # delete_stack network
+# delete_stack iam
 
 exit 0

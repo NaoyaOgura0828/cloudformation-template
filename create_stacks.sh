@@ -31,6 +31,7 @@ create_stack () {
 #####################################
 # 共通
 #####################################
+# create_stack iam
 # create_stack network
 # create_stack sg
 # create_stack ami-build
