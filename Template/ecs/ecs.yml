@@ -40,12 +40,6 @@ Mappings:
       3rd: ap-northeast-1d
 
 Resources:
-  # ECSLogGroup 作成
-  ECSLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /ecs/logs/${TaskFamilyName}
-
   # ECSCluster 作成
   ECSCluster:
     Type: AWS::ECS::Cluster
@@ -66,8 +60,13 @@ Resources:
         - Key: EnvType
           Value: !Ref EnvType
 
-  # ECSTaskDefinition 作成
   # Template
+  # ECSLogGroup 作成
+  ECSLogGroupTemplate:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/logs/${SystemName}-${EnvType}-ecs-def-template # 末尾タスク定義名
+  # ECSTaskDefinition 作成
   ECSTaskDefinitionTemplate: # リソース名適宜変更
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -82,7 +81,7 @@ Resources:
         LogConfiguration:
           LogDriver: awslogs
           Options:
-            awslogs-group: !Ref ECSLogGroup
+            awslogs-group: !Ref ECSLogGroupTemplate
             awslogs-region: !Ref AWS::Region
             awslogs-stream-prefix: ecs
         MemoryReservation: !Ref MemoryReservation
@@ -109,7 +108,7 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
-  # ↓追加ECSTaskDefinitionのResources
+  # ↓追加ECSLogGroup, ECSTaskDefinition
 
   # # ECSService 作成
   # ECSService:
