@@ -84,7 +84,8 @@ Resources:
                     ],
                     "Next": "ECSRunTaskFail"
                   }
-                ]
+                ],
+                "ResultPath": null
               },
               "ECSRunTaskFail": {
                 "Type": "Fail",
@@ -427,6 +428,86 @@ Resources:
   #         Value: !Ref EnvType
   # ↓追加ECSTaskDefinitionのResources
 
+  # Test
+  # ECSRunTask (Timeout ReRun:5)
+  StepFunctionsStateMachineTest: # リソース名適宜変更
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: !Sub
+        - ${SystemName}-${EnvType}-state-machine-test # 末尾リソース名
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      DefinitionString: !Sub
+        - |
+          {
+            "Comment": "ECSRunTask",
+            "StartAt": "ECSRunTask",
+            "States": {
+              "ECSRunTask": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::ecs:runTask.waitForTaskToken",
+                "InputPath": "$",
+                "Parameters": {
+                  "LaunchType": "FARGATE",
+                  "Cluster": "${ECS_CLUSTER_ARN}",
+                  "TaskDefinition": "${ECS_TASK_DEF_ARN}",
+                  "NetworkConfiguration": {
+                    "AwsvpcConfiguration": {
+                      "AssignPublicIp": "${iS_ASSIGN_PUBLIC_IP}",
+                      "SecurityGroups": ["${SECURITY_GROUPS}"],
+                      "Subnets": ["${SUBNETS}"]
+                    }
+                  },
+                  "Overrides": {
+                    "ContainerOverrides": [{
+                      "Environment": [{
+                        "Name": "TASK_TOKEN",
+                        "Value.$": "$$.Task.Token"
+                        }]
+                    }]
+                  }
+                },
+                "Next": "ECSRunTaskSuccess",
+                "ResultPath": null
+              },
+              "ECSRunTaskSuccess": {
+                "Type": "Succeed",
+                "Comment": "ECSRunTaskSuccess"
+              }
+            }
+          }
+        - {
+            REGION: !Ref AWS::Region,
+            ACCOUNT_ID: !Ref AWS::AccountId,
+            SYSTEM_NAME: !Ref SystemName,
+            ENV_TYPE: !Ref EnvType,
+            ECS_TASK_DEF_ARN:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-def-template-arn'}, # タスク定義設定
+            ECS_CLUSTER_ARN:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-cluster-arn'}, # ECSクラスター設定
+            iS_ASSIGN_PUBLIC_IP: !Ref isAssignPublicIp,
+            SECURITY_GROUPS:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-sg'},
+            SUBNETS:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-public-subnet1'}, # サブネット設定
+          }
+      RoleArn:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-role-step-functions-${AWS::Region}
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      StateMachineType: !Ref StateMachineType
+      LoggingConfiguration:
+        IncludeExecutionData: !Ref isIncludeExecutionData
+        Level: 'OFF'
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-state-machine-test # 末尾リソース名
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
 Outputs:
   # Template
   StepFunctionsStateMachineTemplateName: # {リソース名} + 'Name'
@@ -442,3 +523,17 @@ Outputs:
         - ${SystemName}-${EnvType}-state-machine-template-arn # {末尾リソース名} + "-arn"
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
   # ↓追加ECSTaskDefinitionのOutputs
+
+    # Test
+  StepFunctionsStateMachineTestName: # {リソース名} + 'Name'
+    Value: !GetAtt StepFunctionsStateMachineTest.Name # {リソース名}.Name
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-state-machine-test-name # {末尾リソース名} + "-name"
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  StepFunctionsStateMachineTestArn: # {リソース名} + 'Arn'
+    Value: !Ref StepFunctionsStateMachineTest # リソース名
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-state-machine-test-arn # {末尾リソース名} + "-arn"
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
