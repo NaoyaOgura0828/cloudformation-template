@@ -139,7 +139,7 @@ Resources:
         - !FindInMap [AzMap, !Ref AWS::Region, 1st]
         - !FindInMap [AzMap, !Ref AWS::Region, 2nd]
       TargetGroupARNs:
-        - !Ref WebTargetGroup443
+        - !Ref WebTargetGroup
       HealthCheckType: EC2
       HealthCheckGracePeriod: 300
       VPCZoneIdentifier:
@@ -204,7 +204,7 @@ Resources:
       Type: application
 
   # WebTargetGroup 作成
-  WebTargetGroup443:
+  WebTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
@@ -215,14 +215,14 @@ Resources:
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 5
       Name: !Sub
-        - ${SystemName}-${EnvType}-web-tg-443
+        - ${SystemName}-${EnvType}-web-tg
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-      Port: 443
+      Port: 80
       Protocol: HTTPS
       Tags:
         - Key: Name
           Value: !Sub
-          - ${SystemName}-${EnvType}-web-tg-443
+          - ${SystemName}-${EnvType}-web-tg
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
@@ -248,7 +248,7 @@ Resources:
         - !Ref ACMArn
       DefaultActions:
         - Type: forward
-          TargetGroupArn: !Ref WebTargetGroup443
+          TargetGroupArn: !Ref WebTargetGroup
       LoadBalancerArn: !Ref ElasticLoadBalancerWeb
       Port: 443
       Protocol: HTTPS
@@ -258,9 +258,11 @@ Resources:
   WebALBListener80:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      # # HTTP通信設定
       # DefaultActions:
       #   - Type: forward
-      #     TargetGroupArn: !Ref WebTargetGroup80
+      #     TargetGroupArn: !Ref WebTargetGroup
+      # HTTPSリダイレクト設定
       DefaultActions:
         - Type: redirect
           RedirectConfig:
