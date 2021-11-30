@@ -137,7 +137,7 @@ Resources:
         - !FindInMap [AzMap, !Ref AWS::Region, 1st]
         - !FindInMap [AzMap, !Ref AWS::Region, 2nd]
       TargetGroupARNs:
-        - !Ref ApiTargetGroup80
+        - !Ref ApiTargetGroup
       HealthCheckType: EC2
       HealthCheckGracePeriod: 300
       VPCZoneIdentifier:
@@ -202,7 +202,7 @@ Resources:
       Type: application
 
   # ApiTargetGroup 作成
-  ApiTargetGroup80:
+  ApiTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
@@ -213,14 +213,14 @@ Resources:
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 5
       Name: !Sub
-        - ${SystemName}-${EnvType}-api-tg-80
+        - ${SystemName}-${EnvType}-api-tg
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       Port: 80
       Protocol: HTTP
       Tags:
         - Key: Name
           Value: !Sub
-          - ${SystemName}-${EnvType}-api-tg-80
+          - ${SystemName}-${EnvType}-api-tg
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
@@ -258,9 +258,11 @@ Resources:
   ApiALBListener80:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      # HTTP通信設定
       DefaultActions:
         - Type: forward
-          TargetGroupArn: !Ref ApiTargetGroup80
+          TargetGroupArn: !Ref ApiTargetGroup
+      # # HTTPSリダイレクト設定
       # DefaultActions:
       #   - Type: redirect
       #     RedirectConfig:
