@@ -65,6 +65,7 @@ create_stack () {
 # create_stack ecr
 # create_stack ecs
 # create_stack step-functions
+# create_stack event-bridge
 
 #####################################
 # CI/CD

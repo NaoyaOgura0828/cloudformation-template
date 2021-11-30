@@ -37,6 +37,7 @@ delete_stack () {
 #####################################
 # Container
 #####################################
+# delete_stack event-bridge
 # delete_stack step-functions
 # delete_stack ecs
 # delete_stack ecr
