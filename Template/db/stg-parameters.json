@@ -1,0 +1,80 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "Template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "stg"
+        },
+        {
+            "ParameterKey": "isMultiAz",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "CaracterSet",
+            "ParameterValue": "utf8mb4"
+        },
+        {
+            "ParameterKey": "TimeZone",
+            "ParameterValue": "Asia/Tokyo"
+        },
+        {
+            "ParameterKey": "DBAllocatedStorage",
+            "ParameterValue": "500"
+        },
+        {
+            "ParameterKey": "DBMaxAllocatedStorage",
+            "ParameterValue": "550"
+        },
+        {
+            "ParameterKey": "BackupRetentionPeriod",
+            "ParameterValue": "14"
+        },
+        {
+            "ParameterKey": "DBInstanceClass",
+            "ParameterValue": "db.r6g.large"
+        },
+        {
+            "ParameterKey": "Engine",
+            "ParameterValue": "mysql"
+        },
+        {
+            "ParameterKey": "EngineVersion",
+            "ParameterValue": "8.0.23"
+        },
+        {
+            "ParameterKey": "Family",
+            "ParameterValue": "mysql8.0"
+        },
+        {
+            "ParameterKey": "DBName",
+            "ParameterValue": "template_db"
+        },
+        {
+            "ParameterKey": "isDeletionProtection",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "BackupWindow",
+            "ParameterValue": "16:00-18:00"
+        },
+        {
+            "ParameterKey": "MaintenanceWindow",
+            "ParameterValue": "Sat:15:00-Sat:16:00"
+        },
+        {
+            "ParameterKey": "DBPort",
+            "ParameterValue": "3306"
+        },
+        {
+            "ParameterKey": "DBStorageType",
+            "ParameterValue": "gp2"
+        },
+        {
+            "ParameterKey": "IsEncrypted",
+            "ParameterValue": "true"
+        }
+    ]
+}

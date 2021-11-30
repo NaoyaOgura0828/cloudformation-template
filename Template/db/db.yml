@@ -1,0 +1,208 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: RDS For Template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues: [dev, stg, prod]
+    ConstraintDescription: must specify dev, stg or prod.
+  CaracterSet:
+    Type: String
+  TimeZone:
+    Type: String
+  isMultiAz:
+    Description: Enable MultiAz.
+    Type: String
+    AllowedValues: [true, false]
+    ConstraintDescription: must specify true or false.
+  DBAllocatedStorage:
+    Type: String
+  DBMaxAllocatedStorage:
+    Type: Number
+  BackupRetentionPeriod:
+    Type: Number
+  DBInstanceClass:
+    Type: String
+  Engine:
+    Type: String
+  EngineVersion:
+    Type: String
+  Family:
+    Type: String
+  DBName:
+    Type: String
+  isDeletionProtection:
+    Type: String
+    Description: Enable DeletionProtection.
+    AllowedValues: [true, false]
+    ConstraintDescription: must specify true or false.
+  BackupWindow:
+    Type: String
+  MaintenanceWindow:
+    Type: String
+  DBPort:
+    Type: Number
+  DBStorageType:
+    Type: String
+  IsEncrypted:
+    Type: String
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # DBSubnetGroup 作成
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub
+        - ${SystemName}-${EnvType}-db-subnet-group
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      DBSubnetGroupName: !Sub
+        - ${SystemName}-${EnvType}-db-subnet-group
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SubnetIds:
+        - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-private-subnet1
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-private-subnet2
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-db-subnet-group
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # DBParameterGroup 作成
+  DBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: !Sub
+        - ${SystemName}-${EnvType}-db-param-group
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Family: !Ref Family
+      Parameters:
+        character_set_client: !Ref CaracterSet
+        character_set_connection: !Ref CaracterSet
+        character_set_database: !Ref CaracterSet
+        character_set_filesystem: !Ref CaracterSet
+        character_set_results: !Ref CaracterSet
+        character_set_server: !Ref CaracterSet
+        time_zone: !Ref TimeZone
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-db-param-group
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # DBInstance 作成
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      MultiAZ: !Ref isMultiAz
+      AllocatedStorage: !Ref DBAllocatedStorage
+      MaxAllocatedStorage: !Ref DBMaxAllocatedStorage
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      BackupRetentionPeriod: !Ref BackupRetentionPeriod
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !Ref DBInstanceClass
+      DBInstanceIdentifier: !Sub
+        - ${SystemName}-${EnvType}-db-instance
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      DBName: !Ref DBName
+      DBParameterGroupName: !Ref DBParameterGroup
+      DeletionProtection: !Ref isDeletionProtection
+      PreferredBackupWindow: !Ref BackupWindow
+      PreferredMaintenanceWindow: !Ref MaintenanceWindow
+      DBSubnetGroupName:  !Ref DBSubnetGroup
+      Engine: !Ref Engine
+      EngineVersion: !Ref EngineVersion
+      MasterUsername: !Join
+        - ''
+        - - '{{resolve:ssm:'
+          - !Ref SystemName
+          - '-'
+          - !Ref EnvType
+          - '-db-user:1}}'
+      MasterUserPassword: !Join
+        - ''
+        - - '{{resolve:ssm-secure:'
+          - !Ref SystemName
+          - '-'
+          - !Ref EnvType
+          - '-db-pass:1}}'
+      Port: !Ref DBPort
+      PubliclyAccessible: false
+      StorageType: !Ref DBStorageType
+      StorageEncrypted: !Ref IsEncrypted
+      VPCSecurityGroups:
+        - Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-db-sg
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-db-instance
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # DBRecordSetGroup 作成
+  DBRecordSetGroup:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      Comment: !Sub
+        - ${SystemName}-${EnvType}-db-record-set-gp
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      HostedZoneId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-hosted-zone-private-id
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      RecordSets:
+        - Name:
+            !Join
+              - ''
+              - - !Ref DBName
+                - '-db.'
+                - Fn::ImportValue: !Sub
+                  - ${SystemName}-${EnvType}-hosted-zone-private-name
+                  - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+          ResourceRecords:
+            - !GetAtt DBInstance.Endpoint.Address
+          TTL: 3600
+          Type: CNAME
+
+Outputs:
+  DBInstanceRecordSetName:
+    Value:
+      !Join
+        - ''
+        - - !Ref DBName
+          - '-db.'
+          - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-hosted-zone-private-name
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-db-record-set-name
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
