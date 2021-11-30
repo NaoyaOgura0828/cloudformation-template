@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: EventBridge for Template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    Default: dev
+    AllowedValues: [all, dev, stg, prod]
+    ConstraintDescription: must specify all, dev, stg, or prod.
+  ScheduleExpression:
+    Type: String
+  isStateRule:
+    Type: String
+    AllowedValues: [DISABLED , ENABLED]
+  EventBusName:
+    Type: String
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # EventsRule 作成
+  # EventsRuleTemplate
+  EventsRuleTemplate: # リソース名適宜変更
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-events-rule-template # 末尾リソース名
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      Description: !Sub
+        - ${SystemName}-${EnvType}-events-rule-template # 末尾リソース名
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      ScheduleExpression: !Ref ScheduleExpression
+      State: !Ref isStateRule
+      Targets:
+        - Arn:
+            Fn::ImportValue: !Sub
+              - ${SystemName}-${EnvType}-state-machine-template-arn # {末尾リソース名} + "-arn"
+              - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+          Id:
+            Fn::ImportValue: !Sub
+              - ${SystemName}-${EnvType}-state-machine-template-name # {末尾リソース名} + "-name"
+              - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+          RoleArn:
+            Fn::ImportValue: !Sub
+              - ${SystemName}-${EnvType}-role-event-bridge-${AWS::Region}
+              - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      EventBusName: !Ref EventBusName
