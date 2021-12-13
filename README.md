@@ -5,9 +5,12 @@
 
 # Requirement
 
-作成時点では以下の環境にローカル環境よりSSH接続で実行検証済
+ローカル環境よりSSH接続で動作確認済
 - インスタンス: AWS EC2
 - OS: Amazon Linux 2
+
+Windowsローカル仮想環境で動作確認済
+- WSL2 (Ubuntu20.04)
 
 <br>
 
