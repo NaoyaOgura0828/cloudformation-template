@@ -58,6 +58,7 @@ delete_stack () {
 #####################################
 # 共通
 #####################################
+# delete_stack s3
 # aws ses delete-identity --identity {希望Emailアドレス: info@dev-template.dev}
 # aws ses delete-identity --identity {希望ドメイン: dev-template.dev}
 # delete_stack ses
@@ -71,6 +72,7 @@ delete_stack () {
 ## https://docs.aws.amazon.com/ja_jp/cli/latest/reference/ec2/deregister-image.html
 # aws imagebuilder delete-image --image-build-version-arn $(aws imagebuilder list-image-pipelines --query 'imagePipelineList[].arn' --output text --profile ${SYSTEM_NAME}-${ENV_TYPE}) --profile ${SYSTEM_NAME}-${ENV_TYPE}
 # delete_stack ami-build
+# delete_stack endpoint
 # delete_stack sg
 # delete_stack network
 # delete_stack iam

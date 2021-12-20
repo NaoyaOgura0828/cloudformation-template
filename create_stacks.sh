@@ -34,6 +34,7 @@ create_stack () {
 # create_stack iam
 # create_stack network
 # create_stack sg
+# create_stack endpoint
 # create_stack ami-build
 # aws imagebuilder start-image-pipeline-execution --image-pipeline-arn $(aws imagebuilder list-image-pipelines --query 'imagePipelineList[].arn' --output text --profile ${SYSTEM_NAME}-${ENV_TYPE}) --profile ${SYSTEM_NAME}-${ENV_TYPE}
 # create_stack bastion
@@ -45,6 +46,7 @@ create_stack () {
 # create_stack route53
 # aws ses verify-domain-dkim --domain $(eval echo '$'${ENV_TYPE^^}'_DOMAIN') --profile ${SYSTEM_NAME}-${ENV_TYPE}
 # aws ses verify-email-identity --email-address $(eval echo '$'${ENV_TYPE^^}'_EMAIL_ADDRESS') --profile ${SYSTEM_NAME}-${ENV_TYPE}
+# create_stack s3
 
 #####################################
 # WEB/AP

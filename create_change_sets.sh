@@ -37,6 +37,7 @@ create_change_set () {
 # create_change_set iam
 # create_change_set network
 # create_change_set sg
+# create_change_set endpoint
 # create_change_set ami-build
 # aws imagebuilder start-image-pipeline-execution --image-pipeline-arn $(aws imagebuilder list-image-pipelines --query 'imagePipelineList[].arn' --output text --profile ${SYSTEM_NAME}-${ENV_TYPE}) --profile ${SYSTEM_NAME}-${ENV_TYPE}
 # create_change_set bastion
@@ -46,6 +47,7 @@ create_change_set () {
 # create_change_set redis
 # create_change_set vpn
 # create_change_set route53
+# create_change_set s3
 
 #####################################
 # WEB/AP
