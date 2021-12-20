@@ -24,44 +24,6 @@ Mappings:
       3rd: ap-northeast-1d
 
 Resources:
-  # S3バケット 作成
-  S3BucketCodePipeline:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Delete # 本番環境ではRetain
-    Properties:
-      BucketName: !Ref BucketName
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      Tags:
-        - Key: Name
-          Value: !Ref BucketName
-        - Key: SystemName
-          Value: !Ref SystemName
-        - Key: EnvType
-          Value: !Ref EnvType
-  # S3バケットポリシー 作成
-  S3BucketCodePipelinePolicy:
-    Type: AWS::S3::BucketPolicy
-    DependsOn: S3BucketCodePipeline
-    DeletionPolicy: Delete # 本番環境ではRetain
-    Properties:
-      Bucket: !Ref S3BucketCodePipeline
-      PolicyDocument:
-        Statement:
-          - Action: "s3:*"
-            Condition:
-              "Bool":
-                aws:SecureTransport: false
-            Effect: Deny
-            Principal: "*"
-            Resource:
-              - !Sub "arn:${AWS::Partition}:s3:::${S3BucketCodePipeline}"
-              - !Sub "arn:${AWS::Partition}:s3:::${S3BucketCodePipeline}/*"
-            Sid: AllowSSLRequestsOnly
-
-
   # CodePipeline 作成
   # Template
   CodePipelineTemplate: # リソース名適宜変更
@@ -76,7 +38,7 @@ Resources:
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       ArtifactStore:
         Type: S3
-        Location: !Ref S3BucketCodePipeline
+        Location: !Ref BucketName
       Stages:
         # Source 設定
         - Name: Source
