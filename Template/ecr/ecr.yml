@@ -71,11 +71,11 @@ Resources:
 
 Outputs:
   # Template
-  ECRRepositoryTemplate: # リソース名
+  ECRRepositoryTemplateName: # リソース名
     Value: !Ref ECRRepositoryTemplate # リソース名
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-ecr-template # 末尾{RepositoryName}推奨
+        - ${SystemName}-${EnvType}-ecr-template-name # 末尾{RepositoryName}推奨
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
   ECRRepositoryTemplateArn: # {リソース名} + 'Arn'
     Value: !GetAtt ECRRepositoryTemplate.Arn # {リソース名}.Arn
