@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: S3 for Template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues: [all, dev, stg, prod]
+    ConstraintDescription: must specify all, dev, stg, or prod.
+  BucketName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # S3BucketCodePipeline 作成
+  S3BucketCodePipeline:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete # 本番環境ではRetain
+    Properties:
+      BucketName: !Ref BucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: Name
+          Value: !Ref BucketName
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+  # S3BucketCodePipelineポリシー 作成
+  S3BucketCodePipelinePolicy:
+    Type: AWS::S3::BucketPolicy
+    DependsOn: S3BucketCodePipeline
+    DeletionPolicy: Delete # 本番環境ではRetain
+    Properties:
+      Bucket: !Ref S3BucketCodePipeline
+      PolicyDocument:
+        Statement:
+          - Action: "s3:*"
+            Condition:
+              "Bool":
+                aws:SecureTransport: false
+            Effect: Deny
+            Principal: "*"
+            Resource:
+              - !Sub "arn:${AWS::Partition}:s3:::${S3BucketCodePipeline}"
+              - !Sub "arn:${AWS::Partition}:s3:::${S3BucketCodePipeline}/*"
+            Sid: AllowSSLRequestsOnly
