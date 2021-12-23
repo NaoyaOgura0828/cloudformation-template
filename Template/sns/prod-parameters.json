@@ -13,12 +13,20 @@
             "ParameterValue": "false"
         },
         {
-            "ParameterKey": "SubscriptionProtocol",
+            "ParameterKey": "EmailSubscriptionProtocol",
             "ParameterValue": "email"
         },
         {
-            "ParameterKey": "EndpointAddress",
-            "ParameterValue": "prod用メールアドレス"
+            "ParameterKey": "EndpointEmailAddress",
+            "ParameterValue": ""
+        },
+        {
+            "ParameterKey": "SMSSubscriptionProtocol",
+            "ParameterValue": "sms"
+        },
+        {
+            "ParameterKey": "EndpointPhoneNumber",
+            "ParameterValue": "+819012345678"
         }
     ]
 }

@@ -13,12 +13,20 @@
             "ParameterValue": "false"
         },
         {
-            "ParameterKey": "SubscriptionProtocol",
+            "ParameterKey": "EmailSubscriptionProtocol",
             "ParameterValue": "email"
         },
         {
-            "ParameterKey": "EndpointAddress",
-            "ParameterValue": "stg用メールアドレス"
+            "ParameterKey": "EndpointEmailAddress",
+            "ParameterValue": "stg@example.com"
+        },
+        {
+            "ParameterKey": "SMSSubscriptionProtocol",
+            "ParameterValue": "sms"
+        },
+        {
+            "ParameterKey": "EndpointPhoneNumber",
+            "ParameterValue": ""
         }
     ]
 }

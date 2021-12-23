@@ -14,9 +14,13 @@ Parameters:
   isFifoTopic:
     Type: String
     AllowedValues: [true, false]
-  SubscriptionProtocol:
+  EmailSubscriptionProtocol:
     Type: String
-  EndpointAddress:
+  EndpointEmailAddress:
+    Type: String
+  SMSSubscriptionProtocol:
+    Type: String
+  EndpointPhoneNumber:
     Type: String
 
 Mappings:
@@ -26,56 +30,121 @@ Mappings:
       2nd: ap-northeast-1c
       3rd: ap-northeast-1d
 
+Conditions:
+  HasEmailAddress: !Not [!Equals [!Ref EndpointEmailAddress, ""]]
+  HasPhoneNumber: !Not [!Equals [!Ref EndpointPhoneNumber, ""]]
+
 Resources:
-  # Template
   # SNSSubscription 作成
-  SNSSubscriptionTemplate: # リソース名適宜変更
+  # CodePipeline
+  # Email
+  SNSSubscriptionCodePipelineEmail:
+    Condition: HasEmailAddress
     Type: AWS::SNS::Subscription
     Properties:
-      TopicArn: !Ref SNSTopicTemplate
-      Protocol: !Ref SubscriptionProtocol
-      Endpoint: !Ref EndpointAddress
+      TopicArn: !Ref SNSTopicCodePipeline
+      Protocol: !Ref EmailSubscriptionProtocol
+      Endpoint: !Ref EndpointEmailAddress
       Region: !Ref AWS::Region
+  # SMS
+  SNSSubscriptionCodePipelineSMS:
+    Condition: HasPhoneNumber
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref SNSTopicCodePipeline
+      Protocol: !Ref SMSSubscriptionProtocol
+      Endpoint: !Ref EndpointPhoneNumber
+      Region: !Ref AWS::Region
+  # StepFunctions
+  # Email
+  SNSSubscriptionStepFunctionsEmail:
+    Condition: HasEmailAddress
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref SNSTopicStepFunctions
+      Protocol: !Ref EmailSubscriptionProtocol
+      Endpoint: !Ref EndpointEmailAddress
+      Region: !Ref AWS::Region
+  # SMS
+  SNSSubscriptionStepFunctionsSMS:
+    Condition: HasPhoneNumber
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref SNSTopicStepFunctions
+      Protocol: !Ref SMSSubscriptionProtocol
+      Endpoint: !Ref EndpointPhoneNumber
+      Region: !Ref AWS::Region
+
   # SNSTopicPolicy 作成
-  SNSTopicPolicyTemplate: # リソース名適宜変更
+  # CodePipeline
+  SNSTopicPolicyCodePipeline:
     Type: AWS::SNS::TopicPolicy
     Properties:
-      PolicyDocument: !Sub
-        - |
-          {
-            "Version":"2008-10-17",
-            "Statement":[
-              {
-                "Sid":"CodeNotification_publish",
-                "Effect":"Allow",
-                "Principal":{
-                  "Service":"codestar-notifications.amazonaws.com"
-                },
-                "Action":"SNS:Publish",
-                "Resource":"${_SNS_TOPIC}"
-              }
-            ]
-          }
-        - {
-            _SNS_TOPIC: !Ref SNSTopicTemplate
-          }
+      PolicyDocument:
+        Statement:
+          - Sid: CodeNotification_publish
+            Effect: Allow
+            Principal:
+              Service:
+                - codestar-notifications.amazonaws.com
+            Action: sns:Publish
+            Resource:
+              - !Ref SNSTopicCodePipeline
       Topics:
-        - !Ref SNSTopicTemplate
+        - !Ref SNSTopicCodePipeline
+  # StepFunctions
+  SNSTopicPolicyStepFunctions:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Sid: StepFunctionsError
+            Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+            Action: sns:Publish
+            Resource:
+              - !Ref SNSTopicStepFunctions
+      Topics:
+        - !Ref SNSTopicStepFunctions
+
   # SNSTopic 作成
-  SNSTopicTemplate: # リソース名適宜変更
+  # CodePipeline
+  SNSTopicCodePipeline:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: !Sub
-        - ${SystemName}-${EnvType}-sns-topic-template # 末尾リソース名
+        - ${SystemName}-${EnvType}-sns-topic-code-pipeline
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       DisplayName: !Sub
-        - ${SystemName}-${EnvType}-sns-topic-template # 末尾リソース名
+        - ${SystemName}-${EnvType}-sns-topic-code-pipeline
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       FifoTopic: !Ref isFifoTopic
       Tags:
         - Key: Name
           Value: !Sub
-            - ${SystemName}-${EnvType}-sns-topic-template # 末尾リソース名
+            - ${SystemName}-${EnvType}-sns-topic-code-pipeline
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+  # StepFunctions
+  SNSTopicStepFunctions:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub
+        - ${SystemName}-${EnvType}-sns-topic-step-functions
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      DisplayName: !Sub
+        - ${SystemName}-${EnvType}-sns-topic-step-functions
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      FifoTopic: !Ref isFifoTopic
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-sns-topic-step-functions
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
@@ -83,10 +152,17 @@ Resources:
           Value: !Ref EnvType
 
 Outputs:
-  # Template
-  SNSTopicTemplate: # {リソース名}
-    Value: !Ref SNSTopicTemplate # {リソース名}
+  # CodePipeline
+  SNSTopicCodePipelineArn:
+    Value: !Ref SNSTopicCodePipeline
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-sns-topic-template # 末尾リソース名
+        - ${SystemName}-${EnvType}-sns-topic-code-pipeline-arn
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  # StepFunctions
+  SNSTopicStepFunctionsArn:
+    Value: !Ref SNSTopicStepFunctions
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-sns-topic-step-functions-arn
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
