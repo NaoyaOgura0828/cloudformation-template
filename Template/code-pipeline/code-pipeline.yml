@@ -74,7 +74,7 @@ Resources:
               Configuration:
                 NotificationArn:
                   Fn::ImportValue: !Sub
-                    - ${SystemName}-${EnvType}-sns-topic-template # SNStopic名を設定
+                    - ${SystemName}-${EnvType}-sns-topic-code-pipeline-arn # SNStopicArnを設定
                     - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
               RunOrder: 1
               Region: !Ref AWS::Region
