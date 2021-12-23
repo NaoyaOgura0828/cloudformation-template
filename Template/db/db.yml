@@ -58,6 +58,9 @@ Mappings:
       2nd: ap-northeast-1c
       3rd: ap-northeast-1d
 
+Conditions:
+  IsMultiAz: !Equals [!Ref isMultiAz, true]
+
 Resources:
   # DBSubnetGroup 作成
   DBSubnetGroup:
@@ -117,6 +120,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       MultiAZ: !Ref isMultiAz
+      AvailabilityZone: !If [IsMultiAz, !Ref AWS::NoValue, !FindInMap [AzMap, !Ref AWS::Region, 1st]]
       AllocatedStorage: !Ref DBAllocatedStorage
       MaxAllocatedStorage: !Ref DBMaxAllocatedStorage
       AllowMajorVersionUpgrade: false

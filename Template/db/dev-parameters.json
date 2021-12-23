@@ -6,11 +6,11 @@
         },
         {
             "ParameterKey": "EnvType",
-            "ParameterValue": "prod"
+            "ParameterValue": "dev"
         },
         {
             "ParameterKey": "isMultiAz",
-            "ParameterValue": "true"
+            "ParameterValue": "false"
         },
         {
             "ParameterKey": "CaracterSet",
@@ -22,11 +22,11 @@
         },
         {
             "ParameterKey": "DBAllocatedStorage",
-            "ParameterValue": "500"
+            "ParameterValue": "20"
         },
         {
             "ParameterKey": "DBMaxAllocatedStorage",
-            "ParameterValue": "550"
+            "ParameterValue": "21"
         },
         {
             "ParameterKey": "BackupRetentionPeriod",
@@ -34,7 +34,7 @@
         },
         {
             "ParameterKey": "DBInstanceClass",
-            "ParameterValue": "db.r6g.large"
+            "ParameterValue": "db.t3.micro"
         },
         {
             "ParameterKey": "Engine",
@@ -42,7 +42,7 @@
         },
         {
             "ParameterKey": "EngineVersion",
-            "ParameterValue": "8.0.23"
+            "ParameterValue": "8.0.27"
         },
         {
             "ParameterKey": "Family",
