@@ -233,6 +233,106 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
+
+  # TemplateECSRunTaskSNSPublish
+  # ECSRunTask (Error ReRun:5 Error SNS:Publish)
+  StepFunctionsStateMachineTemplateECSRunTaskSNSPublish:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: !Sub
+        - ${SystemName}-${EnvType}-state-machine-template-ecsruntask-sns-publish
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      DefinitionString: !Sub
+        - |
+          {
+            "Comment": "ECSRunTask",
+            "StartAt": "ECSRunTask",
+            "States": {
+              "ECSRunTask": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::ecs:runTask.sync",
+                "InputPath": "$",
+                "Parameters": {
+                  "LaunchType": "FARGATE",
+                  "Cluster": "${ECS_CLUSTER_ARN}",
+                  "TaskDefinition": "${ECS_TASK_DEF_ARN}",
+                  "NetworkConfiguration": {
+                    "AwsvpcConfiguration": {
+                      "AssignPublicIp": "${IS_ASSIGN_PUBLIC_IP}",
+                      "SecurityGroups": [
+                        "${SECURITY_GROUPS}"
+                      ],
+                      "Subnets": [
+                        "${SUBNETS}"
+                      ]
+                    }
+                  }
+                },
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "States.ALL"
+                    ],
+                    "IntervalSeconds": 1,
+                    "BackoffRate": 1,
+                    "MaxAttempts": 5
+                  }
+                ],
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.ALL"
+                    ],
+                    "Next": "SNS Publish"
+                  }
+                ],
+                "End": true
+              },
+              "SNS Publish": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::sns:publish",
+                "Parameters": {
+                  "Message.$": "$",
+                  "TopicArn": "${TOPIC_ARN}"
+                },
+                "End": true
+              }
+            }
+          }
+        - {
+            REGION: !Ref AWS::Region,
+            ACCOUNT_ID: !Ref AWS::AccountId,
+            SYSTEM_NAME: !Ref SystemName,
+            ENV_TYPE: !Ref EnvType,
+            ECS_TASK_DEF_ARN:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-def-template-arn'}, # タスク定義設定
+            ECS_CLUSTER_ARN:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-cluster-arn'}, # ECSクラスター設定
+            IS_ASSIGN_PUBLIC_IP: !Ref isAssignPublicIp,
+            SECURITY_GROUPS:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-ecs-sg'},
+            SUBNETS:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-private-subnet1'}, # サブネット設定
+            TOPIC_ARN:
+              {'Fn::ImportValue': !Sub '${SystemName}-${EnvType}-sns-topic-step-functions-arn'}, # SNSトピック設定
+          }
+      RoleArn:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-role-step-functions-${AWS::Region}
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      StateMachineType: !Ref StateMachineType
+      LoggingConfiguration:
+        IncludeExecutionData: !Ref isIncludeExecutionData
+        Level: 'OFF'
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${SystemName}-${EnvType}-state-machine-template-ecsruntask-sns-publish
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
   # ↓追加ECSTaskDefinitionのResources
 
 Outputs:
@@ -258,6 +358,19 @@ Outputs:
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
   StepFunctionsStateMachineTemplateECSRunTask2FlowArn: # {リソース名} + 'Arn'
     Value: !Ref StepFunctionsStateMachineTemplateECSRunTask2Flow # リソース名
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-state-machine-template-ecsruntask-arn # {末尾リソース名} + "-arn"
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  # TemplateECSRunTaskSNSPublish
+  StepFunctionsStateMachineTemplateECSRunTaskSNSPublishName: # {リソース名} + 'Name'
+    Value: !GetAtt StepFunctionsStateMachineTemplateECSRunTaskSNSPublish.Name # {リソース名}.Name
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-state-machine-template-ecsruntask-name # {末尾リソース名} + "-name"
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+  StepFunctionsStateMachineTemplateECSRunTaskSNSPublishArn: # {リソース名} + 'Arn'
+    Value: !Ref StepFunctionsStateMachineTemplateECSRunTaskSNSPublish # リソース名
     Export:
       Name: !Sub
         - ${SystemName}-${EnvType}-state-machine-template-ecsruntask-arn # {末尾リソース名} + "-arn"
