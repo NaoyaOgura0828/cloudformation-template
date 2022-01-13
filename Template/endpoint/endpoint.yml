@@ -46,7 +46,7 @@ Resources:
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       SecurityGroupIds:
         - Fn::ImportValue: !Sub
-            - ${SystemName}-${EnvType}-privatelink-endpoint-sg
+            - ${SystemName}-${EnvType}-endpoint-sg
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
 
   # EndpointEcrApi 作成
@@ -72,7 +72,7 @@ Resources:
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       SecurityGroupIds:
         - Fn::ImportValue: !Sub
-            - ${SystemName}-${EnvType}-privatelink-endpoint-sg
+            - ${SystemName}-${EnvType}-endpoint-sg
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
 
   # EndpointLogs 作成
@@ -98,7 +98,7 @@ Resources:
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       SecurityGroupIds:
         - Fn::ImportValue: !Sub
-            - ${SystemName}-${EnvType}-privatelink-endpoint-sg
+            - ${SystemName}-${EnvType}-endpoint-sg
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
 
   # EndpointS3 作成
