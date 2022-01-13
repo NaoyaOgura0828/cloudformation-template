@@ -21,40 +21,17 @@ Mappings:
       3nd: ap-northeast-1d
 
 Resources:
-  # EndpointECR 作成
-  EndpointECR:
+  # EndpointEcrDkr 作成
+  EndpointEcrDkr:
     Type: AWS::EC2::VPCEndpoint
     Properties:
-      VpcEndpointType: Interface
-      PrivateDnsEnabled: true
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal: '*'
-            Action:
-              - '*'
-            Resource:
-              - '*'
-      VpcId:
-        Fn::ImportValue: !Sub
-          - ${SystemName}-${EnvType}-vpc
-          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-      SubnetIds:
-        - Fn::ImportValue: !Sub
-          - ${SystemName}-${EnvType}-private-subnet1
-          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-      SecurityGroupIds:
-        - Fn::ImportValue: !Sub
-          - ${SystemName}-${EnvType}-endpoint-sg
-          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       ServiceName: !Sub com.amazonaws.${AWS::Region}.ecr.dkr
-
-  # EndpointECS 作成
-  EndpointECS:
-    Type: AWS::EC2::VPCEndpoint
-    Properties:
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       PolicyDocument:
         Statement:
           - Effect: Allow
@@ -63,16 +40,85 @@ Resources:
               - '*'
             Resource:
               - '*'
-      VpcId:
-        Fn::ImportValue: !Sub
-          - ${SystemName}-${EnvType}-vpc
-          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       SubnetIds:
         - Fn::ImportValue: !Sub
           - ${SystemName}-${EnvType}-private-subnet1
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       SecurityGroupIds:
         - Fn::ImportValue: !Sub
-          - ${SystemName}-${EnvType}-endpoint-sg
+            - ${SystemName}-${EnvType}-privatelink-endpoint-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+
+  # EndpointEcrApi 作成
+  EndpointEcrApi:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecr.api
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
           - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecs
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      SubnetIds:
+        - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-private-subnet1
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-privatelink-endpoint-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+
+  # EndpointLogs 作成
+  EndpointLogs:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.logs
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      SubnetIds:
+        - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-private-subnet1
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-privatelink-endpoint-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+
+  # EndpointS3 作成
+  EndpointS3:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      VpcEndpointType: Gateway
+      PrivateDnsEnabled: false
+      VpcId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-vpc
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      RouteTableIds:
+        - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-private-route-table1
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
