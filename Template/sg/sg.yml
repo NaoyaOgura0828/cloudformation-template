@@ -265,7 +265,7 @@ Resources:
         - Key: EnvType
           Value: !Ref EnvType
 
-  # SecurityGroup for SecurityGroupEndpoint
+  # SecurityGroup for Endpoint
   SecurityGroupEndpoint:
     Type: AWS::EC2::SecurityGroup
     Properties:
