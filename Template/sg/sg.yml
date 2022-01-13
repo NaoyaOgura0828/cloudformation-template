@@ -265,34 +265,22 @@ Resources:
         - Key: EnvType
           Value: !Ref EnvType
 
-  # SecurityGroup for VPC Endpoint
-  SecurityGroupVPCEndpoint:
+  # SecurityGroup for SecurityGroupEndpoint
+  SecurityGroupEndpoint:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: !Sub
-        - ${SystemName}-${EnvType}-vpc-endpoint-sg
+        - ${SystemName}-${EnvType}-endpoint-sg
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       GroupName: !Sub
-        - ${SystemName}-${EnvType}-vpc-endpoint-sg
+        - ${SystemName}-${EnvType}-endpoint-sg
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       SecurityGroupIngress:
-        - Description: 'For private access 1'
-          FromPort: 0
-          ToPort: 65535
+        - Description: 'From HTTPS'
+          CidrIp: 0.0.0.0/0
+          FromPort: 443
+          ToPort: 443
           IpProtocol: tcp
-          CidrIp:
-            Fn::ImportValue: !Sub
-              - ${SystemName}-${EnvType}-private-subnet1-cider
-              - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-      SecurityGroupIngress:
-        - Description: 'For private access 2'
-          FromPort: 0
-          ToPort: 65535
-          IpProtocol: tcp
-          CidrIp:
-            Fn::ImportValue: !Sub
-              - ${SystemName}-${EnvType}-private-subnet2-cider
-              - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
       VpcId:
         Fn::ImportValue: !Sub
           - ${SystemName}-${EnvType}-vpc
@@ -300,7 +288,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub
-            - ${SystemName}-${EnvType}-vpc-endpoint-sg
+            - ${SystemName}-${EnvType}-endpoint-sg
             - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
         - Key: SystemName
           Value: !Ref SystemName
@@ -410,11 +398,11 @@ Outputs:
       Name: !Sub
         - ${SystemName}-${EnvType}-rds-sg
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
-  SecurityGroupVPCEndpoint:
-    Value: !Ref SecurityGroupVPCEndpoint
+  SecurityGroupEndpoint:
+    Value: !Ref SecurityGroupEndpoint
     Export:
       Name: !Sub
-        - ${SystemName}-${EnvType}-vpc-endpoint-sg
+        - ${SystemName}-${EnvType}-endpoint-sg
         - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
   SecurityGroupEFS:
     Value: !Ref SecurityGroupEFS
