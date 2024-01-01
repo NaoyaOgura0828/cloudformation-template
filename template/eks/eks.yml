@@ -24,7 +24,7 @@ Parameters:
     Type: String
   AddonVersionKubeProxy:
     Type: String
-  Namespace:
+  CustomNamespace:
     Type: String
     AllowedPattern: '[a-z0-9-]*'
 
@@ -148,7 +148,9 @@ Resources:
         - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1a-id
         - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1d-id
       Selectors:
-        - Namespace: !Ref Namespace
+        - Namespace: default
+        - Namespace: kube-system
+        - Namespace: !Ref CustomNamespace
       Tags:
         - Key: Name
           Value: !Sub ${SystemName}-${EnvType}-eks-fargateprofile
