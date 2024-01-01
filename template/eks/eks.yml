@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: EKS for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  KubernetesVersion:
+    Type: String
+  isEndpointPublicAccess:
+    Type: String
+    AllowedValues: [true, false]
+  isEndpointPrivateAccess:
+    Type: String
+    AllowedValues: [true, false]
+  AddonVersionAmazonEksPodIdentityAgent:
+    Type: String
+  AddonVersionAmazonVpcCni:
+    Type: String
+  AddonVersionCoreDns:
+    Type: String
+  AddonVersionKubeProxy:
+    Type: String
+  Namespace:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  EksCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Sub ${SystemName}-${EnvType}-eks-cluster
+      Version: !Ref KubernetesVersion
+      RoleArn:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-eks-cluster-arn
+      AccessConfig:
+        BootstrapClusterCreatorAdminPermissions: true
+        AuthenticationMode: API_AND_CONFIG_MAP
+      EncryptionConfig:
+        - Resources:
+            - secrets
+          Provider:
+            KeyArn: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/${SystemName}-${EnvType}-kms-eks
+      ResourcesVpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1a-id
+          - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1d-id
+        EndpointPublicAccess: !Ref isEndpointPublicAccess
+        EndpointPrivateAccess: !Ref isEndpointPrivateAccess
+        PublicAccessCidrs:
+          - 0.0.0.0/0
+      KubernetesNetworkConfig:
+        IpFamily: ipv4
+      Logging:
+        ClusterLogging:
+          EnabledTypes:
+            - Type: api
+            - Type: audit
+            - Type: authenticator
+            - Type: controllerManager
+            - Type: scheduler
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eks-cluster
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EksAddonAmazonEksPodIdentityAgent:
+    Type: AWS::EKS::Addon
+    Properties:
+      ClusterName: !Ref EksCluster
+      AddonName: eks-pod-identity-agent
+      AddonVersion: !Ref AddonVersionAmazonEksPodIdentityAgent
+      ResolveConflicts: OVERWRITE
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eks-addon-amazonekspodidentityagent
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EksAddonAmazonVpcCni:
+    Type: AWS::EKS::Addon
+    Properties:
+      ClusterName: !Ref EksCluster
+      AddonName: vpc-cni
+      AddonVersion: !Ref AddonVersionAmazonVpcCni
+      ResolveConflicts: OVERWRITE
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eks-addon-amazonvpccni
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EksAddonCoreDns:
+    Type: AWS::EKS::Addon
+    Properties:
+      ClusterName: !Ref EksCluster
+      AddonName: coredns
+      AddonVersion: !Ref AddonVersionCoreDns
+      ResolveConflicts: OVERWRITE
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eks-addon-coredns
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EksAddonKubeProxy:
+    Type: AWS::EKS::Addon
+    Properties:
+      ClusterName: !Ref EksCluster
+      AddonName: kube-proxy
+      AddonVersion: !Ref AddonVersionKubeProxy
+      ResolveConflicts: OVERWRITE
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eks-addon-kubeproxy
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EksFargateProfile:
+    Type: AWS::EKS::FargateProfile
+    Properties:
+      ClusterName: !Ref EksCluster
+      FargateProfileName: !Sub ${SystemName}-${EnvType}-eks-fargateprofile
+      PodExecutionRoleArn:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-eks-fargateprofile-arn
+      Subnets:
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1a-id
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1d-id
+      Selectors:
+        - Namespace: !Ref Namespace
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eks-fargateprofile
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType

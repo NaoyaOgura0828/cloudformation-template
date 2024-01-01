@@ -1,0 +1,44 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "KubernetesVersion",
+            "ParameterValue": "1.28"
+        },
+        {
+            "ParameterKey": "isEndpointPublicAccess",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "isEndpointPrivateAccess",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "AddonVersionAmazonEksPodIdentityAgent",
+            "ParameterValue": "v1.0.0-eksbuild.1"
+        },
+        {
+            "ParameterKey": "AddonVersionAmazonVpcCni",
+            "ParameterValue": "v1.16.0-eksbuild.1"
+        },
+        {
+            "ParameterKey": "AddonVersionCoreDns",
+            "ParameterValue": "v1.10.1-eksbuild.6"
+        },
+        {
+            "ParameterKey": "AddonVersionKubeProxy",
+            "ParameterValue": "v1.28.4-eksbuild.1"
+        },
+        {
+            "ParameterKey": "Namespace",
+            "ParameterValue": "template"
+        }
+    ]
+}
