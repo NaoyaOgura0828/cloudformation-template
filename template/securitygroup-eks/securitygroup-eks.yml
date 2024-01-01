@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: SecurityGroup EKS for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  SecurityGroupAlbEks:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${SystemName}-${EnvType}-sg-alb-eks
+      GroupDescription: !Sub ${SystemName}-${EnvType}-sg-alb-eks
+      VpcId:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-vpc-id
+      SecurityGroupIngress:
+        - Description: HTTPS for FullOpen
+          CidrIp: 0.0.0.0/0
+          FromPort: 443
+          ToPort: 443
+          IpProtocol: tcp
+        - Description: HTTP for FullOpen
+          CidrIp: 0.0.0.0/0
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-sg-alb-eks
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+Outputs:
+  SecurityGroupAlbEksId:
+    Value: !Ref SecurityGroupAlbEks
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-sg-alb-eks-id
