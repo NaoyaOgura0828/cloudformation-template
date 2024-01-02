@@ -1,0 +1,205 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM Eks for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  IamRoleEksCluster:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${SystemName}-${EnvType}-iam-role-eks-cluster
+      Description: !Sub ${SystemName}-${EnvType}-iam-role-eks-cluster
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowSecurityTokenService
+            Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: eks.amazonaws.com
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-iam-role-eks-cluster
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  IamRoleEksFargateProfile:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${SystemName}-${EnvType}-iam-role-eks-fargateprofile
+      Description: !Sub ${SystemName}-${EnvType}-iam-role-eks-fargateprofile
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowSecurityTokenService
+            Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: eks-fargate-pods.amazonaws.com
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-iam-role-eks-fargateprofile
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  IamRoleEksLoadBalancerController:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${SystemName}-${EnvType}-iam-role-eks-loadbalancercontroller
+      Description: !Sub ${SystemName}-${EnvType}-iam-role-eks-loadbalancercontroller
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowSecurityTokenService
+            Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: !Sub arn:aws:iam::${AWS::AccountId}:oidc-provider/*
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-iam-role-eks-loadbalancercontroller
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  IamPolicyEksLoadBalancerController:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-eks-loadbalancercontroller
+      Roles:
+        - !Ref IamRoleEksLoadBalancerController
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowAcm
+            Effect: Allow
+            Action:
+              - acm:DescribeCertificate
+              - acm:ListCertificates
+            Resource:
+              - '*'
+          - Sid: AllowCognito
+            Effect: Allow
+            Action:
+              - cognito-idp:DescribeUserPoolClient
+            Resource:
+              - '*'
+          - Sid: AllowEc2
+            Effect: Allow
+            Action:
+              - ec2:AuthorizeSecurityGroupIngress
+              - ec2:CreateSecurityGroup
+              - ec2:CreateTags
+              - ec2:DeleteSecurityGroup
+              - ec2:DeleteTags
+              - ec2:DescribeAccountAttributes
+              - ec2:DescribeAddresses
+              - ec2:DescribeAvailabilityZones
+              - ec2:DescribeCoipPools
+              - ec2:DescribeInstances
+              - ec2:DescribeInternetGateways
+              - ec2:DescribeNetworkInterfaces
+              - ec2:DescribeSecurityGroups
+              - ec2:DescribeSubnets
+              - ec2:DescribeTags
+              - ec2:DescribeVpcPeeringConnections
+              - ec2:DescribeVpcs
+              - ec2:GetCoipPoolUsage
+              - ec2:RevokeSecurityGroupIngress
+            Resource:
+              - '*'
+          - Sid: AllowElasticLoadBalancer
+            Effect: Allow
+            Action:
+              - elasticloadbalancing:AddTags
+              - elasticloadbalancing:CreateListener
+              - elasticloadbalancing:CreateLoadBalancer
+              - elasticloadbalancing:CreateRule
+              - elasticloadbalancing:CreateTargetGroup
+              - elasticloadbalancing:DeleteListener
+              - elasticloadbalancing:DeleteLoadBalancer
+              - elasticloadbalancing:DeleteRule
+              - elasticloadbalancing:DeleteTargetGroup
+              - elasticloadbalancing:DeregisterTargets
+              - elasticloadbalancing:DescribeListenerCertificates
+              - elasticloadbalancing:DescribeListeners
+              - elasticloadbalancing:DescribeLoadBalancerAttributes
+              - elasticloadbalancing:DescribeLoadBalancers
+              - elasticloadbalancing:DescribeRules
+              - elasticloadbalancing:DescribeSSLPolicies
+              - elasticloadbalancing:DescribeTags
+              - elasticloadbalancing:DescribeTargetGroupAttributes
+              - elasticloadbalancing:DescribeTargetGroups
+              - elasticloadbalancing:DescribeTargetHealth
+              - elasticloadbalancing:ModifyLoadBalancerAttributes
+              - elasticloadbalancing:ModifyTargetGroup
+              - elasticloadbalancing:ModifyTargetGroupAttributes
+              - elasticloadbalancing:RegisterTargets
+              - elasticloadbalancing:RemoveTags
+              - elasticloadbalancing:SetIpAddressType
+              - elasticloadbalancing:SetSecurityGroups
+              - elasticloadbalancing:SetSubnets
+            Resource:
+              - '*'
+          - Sid: AllowIam
+            Effect: Allow
+            Action:
+              - iam:CreateServiceLinkedRole
+              - iam:GetServerCertificate
+              - iam:ListServerCertificates
+            Resource:
+              - '*'
+          - Sid: AllowShield
+            Effect: Allow
+            Action:
+              - shield:CreateProtection
+              - shield:DeleteProtection
+              - shield:DescribeProtection
+              - shield:GetSubscriptionState
+            Resource:
+              - '*'
+          - Sid: AllowWaf
+            Effect: Allow
+            Action:
+              - waf-regional:AssociateWebACL
+              - waf-regional:DisassociateWebACL
+              - waf-regional:GetWebACL
+              - waf-regional:GetWebACLForResource
+              - wafv2:AssociateWebACL
+              - wafv2:DisassociateWebACL
+              - wafv2:GetWebACL
+              - wafv2:GetWebACLForResource
+            Resource:
+              - '*'
+
+Outputs:
+  IamRoleEksClusterArn:
+    Value: !GetAtt IamRoleEksCluster.Arn
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-iam-role-eks-cluster-arn
+  IamRoleEksFargateProfileArn:
+    Value: !GetAtt IamRoleEksFargateProfile.Arn
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-iam-role-eks-fargateprofile-arn

@@ -61,6 +61,10 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
+        - Key: kubernetes.io/role/elb
+          Value: 1
+        - Key: !Sub kubernetes.io/cluster/${SystemName}-${EnvType}-eks-cluster
+          Value: owned
 
   SubnetPublic1d:
     Type: AWS::EC2::Subnet
@@ -76,6 +80,10 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
+        - Key: kubernetes.io/role/elb
+          Value: 1
+        - Key: !Sub kubernetes.io/cluster/${SystemName}-${EnvType}-eks-cluster
+          Value: owned
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
