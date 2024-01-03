@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: IAM Eks for template
+Description: IAM EKS for template
 
 Parameters:
   SystemName:
