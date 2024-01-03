@@ -29,8 +29,8 @@ exec_change_set() {
     aws cloudformation create-change-set \
         --stack-name ${SYSTEM_NAME}-${ENV_TYPE}-${SERVICE_NAME} \
         --change-set-name ${SYSTEM_NAME}-${ENV_TYPE}-${SERVICE_NAME}-change-set \
-        --template-body file://./${SYSTEM_NAME}/${SERVICE_NAME}/${SERVICE_NAME}.yml \
-        --cli-input-json file://./${SYSTEM_NAME}/${SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json \
+        --template-body file://./templates/${SERVICE_NAME}/${SERVICE_NAME}.yml \
+        --cli-input-json file://./templates/${SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json \
         --profile ${SYSTEM_NAME}-${ENV_TYPE}-${REGION_NAME}
 
     # ChangeSetCreateComplete 待機
