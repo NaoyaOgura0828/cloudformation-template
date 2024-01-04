@@ -1,0 +1,44 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "CpuCounts",
+            "ParameterValue": "512"
+        },
+        {
+            "ParameterKey": "MemoryAmounts",
+            "ParameterValue": "1024"
+        },
+        {
+            "ParameterKey": "bastionImageTag",
+            "ParameterValue": "latest"
+        },
+        {
+            "ParameterKey": "isEssential",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "DesiredCount",
+            "ParameterValue": "0"
+        },
+        {
+            "ParameterKey": "isDeploymentCircuitBreaker",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "isDeploymentRollback",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "AssignPublicIp",
+            "ParameterValue": "ENABLED"
+        }
+    ]
+}

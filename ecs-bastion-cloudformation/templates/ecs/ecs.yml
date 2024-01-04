@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ECS for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  CpuCounts:
+    Type: Number
+  MemoryAmounts:
+    Type: Number
+  bastionImageTag:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  isEssential:
+    Type: String
+    AllowedValues: [true, false]
+  DesiredCount:
+    Type: Number
+  isDeploymentCircuitBreaker:
+    Type: String
+    AllowedValues: [true, false]
+  isDeploymentRollback:
+    Type: String
+    AllowedValues: [true, false]
+  AssignPublicIp:
+    Type: String
+    AllowedValues: [DISABLED, ENABLED]
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  EcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${SystemName}-${EnvType}-ecs-cluster
+      CapacityProviders:
+        - FARGATE
+      ClusterSettings:
+         - Name: containerInsights
+           Value: enabled
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-ecs-cluster
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EcsTaskDefinitionBastion:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${SystemName}-${EnvType}-ecs-taskdefinition-bastion
+      RequiresCompatibilities:
+        - FARGATE
+      RuntimePlatform:
+        CpuArchitecture: X86_64
+        OperatingSystemFamily: LINUX
+      NetworkMode: awsvpc
+      Cpu: !Ref CpuCounts
+      Memory: !Ref MemoryAmounts
+      TaskRoleArn:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-ecs-task-bastion-arn
+      ExecutionRoleArn:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-ecs-task-execution-arn
+      ContainerDefinitions:
+        - Name: bastion
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/bastion:${bastionImageTag}
+          Essential: !Ref isEssential
+          PortMappings:
+            - ContainerPort: 22
+              Protocol: tcp
+              Name: bastion
+              AppProtocol: !Ref AWS::NoValue
+          ReadonlyRootFilesystem: false
+          Environment:
+            - Name: SYSTEM_NAME
+              Value: !Ref SystemName
+            - Name: ENV_TYPE
+              Value: !Ref EnvType
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub /aws/ecs/${SystemName}-${EnvType}-ecs-task-bastion
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: bastion
+              awslogs-create-group: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-ecs-taskdefinition-bastion
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EcsServiceBastion:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !GetAtt EcsCluster.Arn
+      CapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Base: 0
+          Weight: 1
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref EcsTaskDefinitionBastion
+      ServiceName: !Sub ${SystemName}-${EnvType}-ecs-service-bastion
+      DesiredCount: !Ref DesiredCount
+      DeploymentController:
+        Type: ECS
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+        DeploymentCircuitBreaker:
+          Enable: !Ref isDeploymentCircuitBreaker
+          Rollback: !Ref isDeploymentRollback
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-public-1a-id
+            - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-public-1d-id
+          SecurityGroups:
+            - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-sg-ecs-bastion-id
+          AssignPublicIp: !Ref AssignPublicIp
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-ecs-service-bastion
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType

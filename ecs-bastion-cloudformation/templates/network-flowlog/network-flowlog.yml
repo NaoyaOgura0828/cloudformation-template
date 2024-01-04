@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Network FlowLog for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  VpcFlowLog:
+    Type: AWS::EC2::FlowLog
+    Properties:
+      ResourceType: VPC
+      ResourceId:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-vpc-id
+      TrafficType: ALL
+      MaxAggregationInterval: 600
+      LogDestinationType: cloud-watch-logs
+      LogGroupName: !Sub /aws/vpc/${SystemName}-${EnvType}-vpc
+      DeliverLogsPermissionArn:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-vpc-flowlog-arn
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-vpc-flowlog
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
