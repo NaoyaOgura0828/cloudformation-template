@@ -40,6 +40,6 @@ Outputs:
     Export:
       Name: !Sub ${SystemName}-${EnvType}-route53-hostzone-bastion-id
   HostedZoneBastionName:
-    Value: !Ref HostedZoneBastionName
+    Value: !Sub bastion.${ParentNakedDomain}
     Export:
       Name: !Sub ${SystemName}-${EnvType}-route53-hostzone-bastion-name
