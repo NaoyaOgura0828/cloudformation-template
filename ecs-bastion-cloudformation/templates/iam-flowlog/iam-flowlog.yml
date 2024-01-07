@@ -57,9 +57,3 @@ Resources:
               - logs:DescribeLogStreams
             Resource:
               - '*'
-
-Outputs:
-  IamRoleVpcFlowLogArn:
-    Value: !GetAtt IamRoleVpcFlowLog.Arn
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-iam-role-vpc-flowlog-arn

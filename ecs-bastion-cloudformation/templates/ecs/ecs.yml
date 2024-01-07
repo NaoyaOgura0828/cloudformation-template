@@ -18,6 +18,9 @@ Parameters:
   isEssential:
     Type: String
     AllowedValues: [true, false]
+  ParentNakedDomain:
+    Type: String
+    AllowedPattern: '^([a-z0-9][a-z0-9-]{1,61}[a-z0-9]\.)+[a-z]{2,}$'
   DesiredCount:
     Type: Number
   isDeploymentCircuitBreaker:
@@ -67,10 +70,8 @@ Resources:
       NetworkMode: awsvpc
       Cpu: !Ref CpuCounts
       Memory: !Ref MemoryAmounts
-      TaskRoleArn:
-        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-ecs-task-bastion-arn
-      ExecutionRoleArn:
-        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-ecs-task-execution-arn
+      TaskRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${SystemName}-${EnvType}-iam-role-ecs-task-bastion
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${SystemName}-${EnvType}-iam-role-ecs-task-execution
       ContainerDefinitions:
         - Name: bastion
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/bastion:${bastionImageTag}
@@ -86,6 +87,8 @@ Resources:
               Value: !Ref SystemName
             - Name: ENV_TYPE
               Value: !Ref EnvType
+            - Name: PARENT_NAKED_DOMAIN
+              Value: !Ref ParentNakedDomain
           LogConfiguration:
             LogDriver: awslogs
             Options:

@@ -62,9 +62,37 @@ get_private_key() {
 
 }
 
+create_parameters_main_tokyo() {
+    STACK_NAME=$1
+
+    set -o noclobber
+
+    sed -e 's/"ParameterValue": "'${SOURCE_SITE_NAME}'"/"ParameterValue": "'${CREATE_SITE_NAME}'"/' \
+        ./lpplatform/${STACK_NAME}/${SOURCE_SITE_NAME}-${MAIN_ENV_TYPE}-${TOKYO_REGION}-parameters.json > \
+        ./lpplatform/${STACK_NAME}/${CREATE_SITE_NAME}-${MAIN_ENV_TYPE}-${TOKYO_REGION}-parameters.json
+
+    set +o noclobber
+}
+
+replace_parameter_json() {
+    ENV_TYPE=$1
+    REGION_NAME=$2
+    SOURCE_SERVICE_NAME=$3
+    TARGET_SERVICE_NAME=$4
+    REPLACE_KEY_NAME=$5
+
+    replace_value=$(jq -r '.Parameters[] | select(.ParameterKey == "'${REPLACE_KEY_NAME}'").ParameterValue' "./templates/${SOURCE_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json")
+
+    jq --indent 4 '.Parameters[] |= if .ParameterKey == "'${REPLACE_KEY_NAME}'" then .ParameterValue = "'${replace_value}'" else . end' \
+        ./templates/${TARGET_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json > \
+        tmp.json && mv tmp.json ./templates/${TARGET_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json
+
+}
+
 #####################################
 # 構築対象リソース
 #####################################
+# replace_parameter_json ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} route53-hostzone ecs ParentNakedDomain
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} route53-hostzone
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-flowlog
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-ecs

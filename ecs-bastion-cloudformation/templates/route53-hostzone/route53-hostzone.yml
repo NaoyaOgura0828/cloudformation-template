@@ -33,13 +33,3 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
-
-Outputs:
-  HostedZoneBastionId:
-    Value: !Ref HostedZoneBastion
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-route53-hostzone-bastion-id
-  HostedZoneBastionName:
-    Value: !Sub bastion.${ParentNakedDomain}
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-route53-hostzone-bastion-name

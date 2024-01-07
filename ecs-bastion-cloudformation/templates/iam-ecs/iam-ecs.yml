@@ -53,10 +53,6 @@ Resources:
             Effect: Allow
             Action:
               - logs:CreateLogGroup
-              # - logs:CreateLogStream
-              # - logs:PutLogEvents
-              # - logs:DescribeLogGroups
-              # - logs:DescribeLogStreams
             Resource:
               - '*'
 
@@ -82,13 +78,3 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
-
-Outputs:
-  IamRoleEcsTaskExecutionArn:
-    Value: !GetAtt IamRoleEcsTaskExecution.Arn
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-iam-role-ecs-task-execution-arn
-  IamRoleEcsTaskBastionArn:
-    Value: !GetAtt IamRoleEcsTaskBastion.Arn
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-iam-role-ecs-task-bastion-arn

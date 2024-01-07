@@ -25,6 +25,10 @@
             "ParameterValue": "true"
         },
         {
+            "ParameterKey": "ParentNakedDomain",
+            "ParameterValue": "ogura-linux.dev"
+        },
+        {
             "ParameterKey": "DesiredCount",
             "ParameterValue": "0"
         },

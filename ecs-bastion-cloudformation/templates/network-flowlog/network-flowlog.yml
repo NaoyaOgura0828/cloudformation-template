@@ -27,8 +27,7 @@ Resources:
       MaxAggregationInterval: 600
       LogDestinationType: cloud-watch-logs
       LogGroupName: !Sub /aws/vpc/${SystemName}-${EnvType}-vpc
-      DeliverLogsPermissionArn:
-        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-vpc-flowlog-arn
+      DeliverLogsPermissionArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${SystemName}-${EnvType}-iam-role-vpc-flowlog
       Tags:
         - Key: Name
           Value: !Sub ${SystemName}-${EnvType}-vpc-flowlog
