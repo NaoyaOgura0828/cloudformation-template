@@ -43,6 +43,7 @@ Resources:
       Version: !Ref KubernetesVersion
       RoleArn:
         Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-eks-cluster-arn
+      RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${SystemName}-${EnvType}-iam-role-eks-cluster
       AccessConfig:
         BootstrapClusterCreatorAdminPermissions: true
         AuthenticationMode: API_AND_CONFIG_MAP
@@ -144,8 +145,7 @@ Resources:
     Properties:
       ClusterName: !Ref EksCluster
       FargateProfileName: !Sub ${SystemName}-${EnvType}-eks-fargateprofile
-      PodExecutionRoleArn:
-        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-iam-role-eks-fargateprofile-arn
+      PodExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${SystemName}-${EnvType}-iam-role-eks-fargateprofile
       Subnets:
         - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1a-id
         - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1d-id

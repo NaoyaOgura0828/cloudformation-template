@@ -52,14 +52,8 @@ Resources:
             Action:
               - logs:CreateLogGroup
               - logs:CreateLogStream
-              - logs:PutLogEvents
               - logs:DescribeLogGroups
               - logs:DescribeLogStreams
+              - logs:PutLogEvents
             Resource:
               - '*'
-
-Outputs:
-  IamRoleVpcFlowLogArn:
-    Value: !GetAtt IamRoleVpcFlowLog.Arn
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-iam-role-vpc-flowlog-arn

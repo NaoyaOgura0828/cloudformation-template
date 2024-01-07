@@ -62,13 +62,3 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
-
-Outputs:
-  IamRoleEksClusterArn:
-    Value: !GetAtt IamRoleEksCluster.Arn
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-iam-role-eks-cluster-arn
-  IamRoleEksFargateProfileArn:
-    Value: !GetAtt IamRoleEksFargateProfile.Arn
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-iam-role-eks-fargateprofile-arn
