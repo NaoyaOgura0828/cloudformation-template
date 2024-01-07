@@ -52,8 +52,8 @@ Resources:
             Action:
               - logs:CreateLogGroup
               - logs:CreateLogStream
-              - logs:PutLogEvents
               - logs:DescribeLogGroups
               - logs:DescribeLogStreams
+              - logs:PutLogEvents
             Resource:
               - '*'
