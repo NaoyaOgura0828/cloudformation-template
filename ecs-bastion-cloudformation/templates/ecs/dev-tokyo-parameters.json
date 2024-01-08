@@ -43,6 +43,14 @@
         {
             "ParameterKey": "AssignPublicIp",
             "ParameterValue": "ENABLED"
+        },
+        {
+            "ParameterKey": "CreateUserList",
+            "ParameterValue": "user1, user2, user3"
+        },
+        {
+            "ParameterKey": "isDeleteAdminUser",
+            "ParameterValue": "false"
         }
     ]
 }

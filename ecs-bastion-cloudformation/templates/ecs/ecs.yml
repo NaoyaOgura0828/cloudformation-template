@@ -32,6 +32,11 @@ Parameters:
   AssignPublicIp:
     Type: String
     AllowedValues: [DISABLED, ENABLED]
+  CreateUserList:
+    Type: String
+  isDeleteAdminUser:
+    Type: String
+    AllowedValues: [true, false]
 
 Mappings:
   AzMap:
@@ -89,6 +94,10 @@ Resources:
               Value: !Ref EnvType
             - Name: PARENT_NAKED_DOMAIN
               Value: !Ref ParentNakedDomain
+            - Name: CREATE_USER_LIST
+              Value: !Ref CreateUserList
+            - Name: IS_DELETE_ADMIN_USER
+              Value: !Ref isDeleteAdminUser
           LogConfiguration:
             LogDriver: awslogs
             Options:
