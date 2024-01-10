@@ -49,6 +49,10 @@
             "ParameterValue": "user1, user2, user3"
         },
         {
+            "ParameterKey": "KeyName",
+            "ParameterValue": "template-key"
+        },
+        {
             "ParameterKey": "isDeleteAdminUser",
             "ParameterValue": "false"
         }

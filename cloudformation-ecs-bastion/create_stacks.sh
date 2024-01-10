@@ -92,6 +92,7 @@ replace_parameter_json() {
 # 構築対象リソース
 #####################################
 # replace_parameter_json ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} route53-hostzone ecs ParentNakedDomain
+# replace_parameter_json ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} keypair ecs KeyName
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} route53-hostzone
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-flowlog
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-ecs

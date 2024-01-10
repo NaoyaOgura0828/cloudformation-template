@@ -34,6 +34,9 @@ Parameters:
     AllowedValues: [DISABLED, ENABLED]
   CreateUserList:
     Type: String
+  KeyName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
   isDeleteAdminUser:
     Type: String
     AllowedValues: [true, false]
@@ -96,6 +99,8 @@ Resources:
               Value: !Ref ParentNakedDomain
             - Name: CREATE_USER_LIST
               Value: !Ref CreateUserList
+            - Name: KEY_PAIR_NAME
+              Value: !Ref KeyName
             - Name: IS_DELETE_ADMIN_USER
               Value: !Ref isDeleteAdminUser
           LogConfiguration:
