@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM EC2 for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  IamRoleEc2Bastion:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${SystemName}-${EnvType}-iam-role-ec2-bastion
+      Description: !Sub ${SystemName}-${EnvType}-iam-role-ec2-bastion
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowSecurityTokenService
+            Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: ec2.amazonaws.com
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-iam-role-ec2-bastion
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # 要IAM Policy作成
+  # IamPolicyEc2Bastion:
+  #   Type: AWS::IAM::Policy
+  #   Properties:
+  #     Roles:
+  #       - !Ref IamRoleEc2Bastion
+  #     PolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-ec2
+  #     PolicyDocument:
+  #       Version: 2012-10-17
+  #       Statement:
+  #         - Sid: AllowEc2
+  #           Effect: Allow
+  #           Action:
+  #             - ec2:DescribeKeyPairs
+  #           Resource:
+  #             - '*'
+  #         - Sid: AllowKms
+  #           Effect: Allow
+  #           Action:
+  #             - kms:Decrypt
+  #           Resource:
+  #             - '*'
+  #         - Sid: AllowRoute53
+  #           Effect: Allow
+  #           Action:
+  #             - route53:ChangeResourceRecordSets
+  #             - route53:ListHostedZones
+  #             - route53:ListHostedZonesByName
+  #             - route53:ListResourceRecordSets
+  #           Resource:
+  #             - '*'
+  #         - Sid: AllowSystemsManager
+  #           Effect: Allow
+  #           Action:
+  #             - ssm:GetParameter
+  #           Resource:
+  #             - '*'
+
+  IamInstanceProfileBastion:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref IamRoleEc2Bastion
+      InstanceProfileName: !Sub ${SystemName}-${EnvType}-iam-instanceprofile-bastion

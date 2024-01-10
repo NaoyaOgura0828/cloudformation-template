@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: SecurityGroup EC2 for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  SecurityGroupEc2Bastion:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${SystemName}-${EnvType}-securitygroup-ec2-bastion
+      GroupDescription: !Sub ${SystemName}-${EnvType}-securitygroup-ec2-bastion
+      VpcId:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-vpc-id
+      SecurityGroupIngress:
+        - Description: SSH for FullOpen
+          CidrIp: 0.0.0.0/0
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-securitygroup-ec2-bastion
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+Outputs:
+  SecurityGroupEc2BastionId:
+    Value: !Ref SecurityGroupEc2Bastion
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-securitygroup-ec2-bastion-id
