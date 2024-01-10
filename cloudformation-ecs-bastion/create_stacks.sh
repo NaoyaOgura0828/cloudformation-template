@@ -15,7 +15,6 @@ REGION_NAME_TOKYO=tokyo
 REGION_NAME_OSAKA=osaka
 REGION_NAME_VIRGINIA=virginia
 
-# スタック 作成
 create_stack() {
     SYSTEM_NAME=$1
     ENV_TYPE=$2
@@ -33,12 +32,12 @@ create_stack() {
         --profile ${SYSTEM_NAME}-${ENV_TYPE}-${REGION_NAME}
 }
 
-# 秘密鍵 取得
 get_private_key() {
     SYSTEM_NAME=$1
     ENV_TYPE=$2
     REGION_NAME=$3
-    KEY_PAIR_NAME=$4
+
+    key_pair_name=$(jq -r '.Parameters[] | select(.ParameterKey == "KeyName").ParameterValue' "./templates/keypair/${ENV_TYPE}-${REGION_NAME}-parameters.json")
 
     AWS_ACCOUNT_ID=$(aws sts get-caller-identity \
         --query "Account" \
@@ -46,7 +45,7 @@ get_private_key() {
         --output text)
 
     KEY_PAIR_ID=$(aws ec2 describe-key-pairs \
-        --filters Name=key-name,Values=${KEY_PAIR_NAME} \
+        --filters Name=key-name,Values=${key_pair_name} \
         --query KeyPairs[*].KeyPairId \
         --profile ${SYSTEM_NAME}-${ENV_TYPE}-${REGION_NAME} \
         --output text)
@@ -56,9 +55,9 @@ get_private_key() {
         --with-decryption \
         --query Parameter.Value \
         --profile ${SYSTEM_NAME}-${ENV_TYPE}-${REGION_NAME} \
-        --output text > ${KEY_PAIR_NAME}.pem
+        --output text > ${key_pair_name}.pem
 
-    chmod 600 ${KEY_PAIR_NAME}.pem
+    chmod 600 ${key_pair_name}.pem
 
 }
 
@@ -97,7 +96,7 @@ replace_parameter_json() {
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-flowlog
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-ecs
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} keypair
-# get_private_key ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} ${SYSTEM_NAME_TEMPLATE}-${ENV_TYPE_DEV}-keypair
+# get_private_key ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO}
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} network
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} network-flowlog
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} securitygroup-ecs

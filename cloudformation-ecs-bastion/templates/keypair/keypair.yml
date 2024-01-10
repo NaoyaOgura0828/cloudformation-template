@@ -8,6 +8,9 @@ Parameters:
   EnvType:
     Type: String
     AllowedPattern: '[a-z0-9-]*'
+  KeyName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
   Cryptography:
     Type: String
     AllowedValues: [rsa, ed25519]
@@ -26,12 +29,12 @@ Resources:
   KeyPair:
     Type: AWS::EC2::KeyPair
     Properties:
-      KeyName: !Sub ${SystemName}-${EnvType}-keypair
+      KeyName: !Ref KeyName
       KeyType: !Ref Cryptography
       KeyFormat: !Ref PrivateKeyFormat
       Tags:
         - Key: Name
-          Value: !Sub ${SystemName}-${EnvType}-keypair
+          Value: !Ref KeyName
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType

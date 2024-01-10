@@ -139,7 +139,7 @@ Resources:
             - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-public-1a-id
             - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-public-1d-id
           SecurityGroups:
-            - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-sg-ecs-bastion-id
+            - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-securitygroup-ecs-bastion-id
           AssignPublicIp: !Ref AssignPublicIp
       Tags:
         - Key: Name

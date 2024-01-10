@@ -20,8 +20,8 @@ Resources:
   SecurityGroupEcsBastion:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub ${SystemName}-${EnvType}-sg-ecs-bastion
-      GroupDescription: !Sub ${SystemName}-${EnvType}-sg-ecs-bastion
+      GroupName: !Sub ${SystemName}-${EnvType}-securitygroup-ecs-bastion
+      GroupDescription: !Sub ${SystemName}-${EnvType}-securitygroup-ecs-bastion
       VpcId:
         Fn::ImportValue: !Sub ${SystemName}-${EnvType}-vpc-id
       SecurityGroupIngress:
@@ -32,7 +32,7 @@ Resources:
           IpProtocol: tcp
       Tags:
         - Key: Name
-          Value: !Sub ${SystemName}-${EnvType}-sg-ecs-bastion
+          Value: !Sub ${SystemName}-${EnvType}-securitygroup-ecs-bastion
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
@@ -42,4 +42,4 @@ Outputs:
   SecurityGroupEcsBastionId:
     Value: !Ref SecurityGroupEcsBastion
     Export:
-      Name: !Sub ${SystemName}-${EnvType}-sg-ecs-bastion-id
+      Name: !Sub ${SystemName}-${EnvType}-securitygroup-ecs-bastion-id

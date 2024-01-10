@@ -9,6 +9,10 @@
             "ParameterValue": "dev"
         },
         {
+            "ParameterKey": "KeyName",
+            "ParameterValue": "template-key"
+        },
+        {
             "ParameterKey": "Cryptography",
             "ParameterValue": "rsa"
         },
