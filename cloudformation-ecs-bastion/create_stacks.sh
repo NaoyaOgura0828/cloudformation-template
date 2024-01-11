@@ -61,18 +61,6 @@ get_private_key() {
 
 }
 
-create_parameters_main_tokyo() {
-    STACK_NAME=$1
-
-    set -o noclobber
-
-    sed -e 's/"ParameterValue": "'${SOURCE_SITE_NAME}'"/"ParameterValue": "'${CREATE_SITE_NAME}'"/' \
-        ./lpplatform/${STACK_NAME}/${SOURCE_SITE_NAME}-${MAIN_ENV_TYPE}-${TOKYO_REGION}-parameters.json > \
-        ./lpplatform/${STACK_NAME}/${CREATE_SITE_NAME}-${MAIN_ENV_TYPE}-${TOKYO_REGION}-parameters.json
-
-    set +o noclobber
-}
-
 replace_parameter_json() {
     ENV_TYPE=$1
     REGION_NAME=$2
