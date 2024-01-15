@@ -37,6 +37,7 @@ case ${yn} in
         aws cloudformation wait stack-delete-complete \
             --stack-name ${SYSTEM_NAME}-${ENV_TYPE}-${SERVICE_NAME} \
             --profile ${SYSTEM_NAME}-${ENV_TYPE}-${REGION_NAME}
+
     }
 
     # Delete Record from Bastion Domain

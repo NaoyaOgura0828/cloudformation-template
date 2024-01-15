@@ -33,6 +33,7 @@ create_stack() {
     aws cloudformation wait stack-create-complete \
         --stack-name ${SYSTEM_NAME}-${ENV_TYPE}-${SERVICE_NAME} \
         --profile ${SYSTEM_NAME}-${ENV_TYPE}-${REGION_NAME}
+
 }
 
 #####################################

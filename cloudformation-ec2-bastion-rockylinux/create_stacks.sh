@@ -64,13 +64,14 @@ get_private_key() {
 replace_parameter_json() {
     ENV_TYPE=$1
     REGION_NAME=$2
-    REPLACE_KEY_NAME=$3
+    SOURCE_REPLACE_KEY_NAME=$3
     SOURCE_SERVICE_NAME=$4
-    TARGET_SERVICE_NAME=$5
+    TARGET_REPLACE_KEY_NAME=$5
+    TARGET_SERVICE_NAME=$6
 
-    replace_value=$(jq -r '.Parameters[] | select(.ParameterKey == "'${REPLACE_KEY_NAME}'").ParameterValue' "./templates/${SOURCE_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json")
+    replace_value=$(jq -r '.Parameters[] | select(.ParameterKey == "'${SOURCE_REPLACE_KEY_NAME}'").ParameterValue' "./templates/${SOURCE_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json")
 
-    jq --indent 4 '.Parameters[] |= if .ParameterKey == "'${REPLACE_KEY_NAME}'" then .ParameterValue = "'${replace_value}'" else . end' \
+    jq --indent 4 '.Parameters[] |= if .ParameterKey == "'${TARGET_REPLACE_KEY_NAME}'" then .ParameterValue = "'${replace_value}'" else . end' \
         ./templates/${TARGET_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json > \
         tmp.json && mv tmp.json ./templates/${TARGET_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json
 
@@ -79,7 +80,7 @@ replace_parameter_json() {
 #####################################
 # 構築対象リソース
 #####################################
-# replace_parameter_json ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} KeyName keypair ec2-bastion
+# replace_parameter_json ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} KeyName keypair KeyName ec2-bastion
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-flowlog
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-ec2
 # create_stack ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} kms

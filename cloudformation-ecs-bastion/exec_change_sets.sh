@@ -113,13 +113,14 @@ exec_change_set() {
 replace_parameter_json() {
     ENV_TYPE=$1
     REGION_NAME=$2
-    REPLACE_KEY_NAME=$3
+    SOURCE_REPLACE_KEY_NAME=$3
     SOURCE_SERVICE_NAME=$4
-    TARGET_SERVICE_NAME=$5
+    TARGET_REPLACE_KEY_NAME=$5
+    TARGET_SERVICE_NAME=$6
 
-    replace_value=$(jq -r '.Parameters[] | select(.ParameterKey == "'${REPLACE_KEY_NAME}'").ParameterValue' "./templates/${SOURCE_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json")
+    replace_value=$(jq -r '.Parameters[] | select(.ParameterKey == "'${SOURCE_REPLACE_KEY_NAME}'").ParameterValue' "./templates/${SOURCE_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json")
 
-    jq --indent 4 '.Parameters[] |= if .ParameterKey == "'${REPLACE_KEY_NAME}'" then .ParameterValue = "'${replace_value}'" else . end' \
+    jq --indent 4 '.Parameters[] |= if .ParameterKey == "'${TARGET_REPLACE_KEY_NAME}'" then .ParameterValue = "'${replace_value}'" else . end' \
         ./templates/${TARGET_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json > \
         tmp.json && mv tmp.json ./templates/${TARGET_SERVICE_NAME}/${ENV_TYPE}-${REGION_NAME}-parameters.json
 
@@ -128,7 +129,8 @@ replace_parameter_json() {
 #####################################
 # 変更対象リソース
 #####################################
-# replace_parameter_json ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} ParentNakedDomain route53-hostzone ecs
+# replace_parameter_json ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} ParentNakedDomain route53-hostzone ParentNakedDomain ecs
+# replace_parameter_json ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} KeyName keypair KeyName ecs
 # exec_change_set ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} route53-hostzone
 # exec_change_set ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-flowlog
 # exec_change_set ${SYSTEM_NAME_TEMPLATE} ${ENV_TYPE_DEV} ${REGION_NAME_TOKYO} iam-ecs
