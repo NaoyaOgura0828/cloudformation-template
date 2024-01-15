@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: SES for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  isSendingEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  DedicatedIpPoolName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  CustomRedirectDomain:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  TlsPolicy:
+    Type: String
+    AllowedValues: [REQUIRE, OPTIONAL]
+  isReputationMetricsEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  EngagementMetrics:
+    Type: String
+    AllowedValues: [ENABLED, DISABLED]
+  OptimizedSharedDelivery:
+    Type: String
+    AllowedValues: [ENABLED, DISABLED]
+  isEventDestinationEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  SendMailDomain:
+    Type: String
+    AllowedPattern: '[a-z0-9-.]*'
+  SendMailSubDomain:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  BehaviorOnMxFailure:
+    Type: String
+    AllowedValues: [USE_DEFAULT_VALUE, REJECT_MESSAGE]
+  DkimSigningKeyLength:
+    Type: String
+    AllowedValues: [RSA_1024_BIT, RSA_2048_BIT]
+  isDkimAttributesSigningEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  isFeedbackAttributesEmailForwardingEnabled:
+    Type: String
+    AllowedValues: [true, false]
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Conditions:
+  HasDedicatedIpPoolName: !Not [ !Equals [ !Ref DedicatedIpPoolName, '' ] ]
+  HasCustomRedirectDomain: !Not [ !Equals [ !Ref CustomRedirectDomain, '' ] ]
+
+Resources:
+  SesVdmAttributes:
+    Type: AWS::SES::VdmAttributes
+    Properties:
+      DashboardAttributes:
+        EngagementMetrics: !Ref EngagementMetrics
+      GuardianAttributes:
+        OptimizedSharedDelivery: !Ref OptimizedSharedDelivery
+
+  SesConfigurationSet:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      SendingOptions:
+          SendingEnabled: !Ref isSendingEnabled
+      Name: !Sub ${SystemName}-${EnvType}-ses-configurationset
+      DeliveryOptions:
+        SendingPoolName: !If
+          - HasDedicatedIpPoolName
+          - !Ref DedicatedIpPoolName
+          - !Ref AWS::NoValue
+        TlsPolicy: !Ref TlsPolicy
+      TrackingOptions: !If
+        - HasCustomRedirectDomain
+        - CustomRedirectDomain:
+            !Ref CustomRedirectDomain
+        - !Ref AWS::NoValue
+      ReputationOptions:
+          ReputationMetricsEnabled: !Ref isReputationMetricsEnabled
+      SuppressionOptions:
+        SuppressedReasons:
+          - BOUNCE
+          - COMPLAINT
+      VdmOptions:
+        DashboardOptions:
+          EngagementMetrics: !Ref EngagementMetrics
+        GuardianOptions:
+          OptimizedSharedDelivery: !Ref OptimizedSharedDelivery
+
+  SesConfigurationSetEventDestination:
+    Type: AWS::SES::ConfigurationSetEventDestination
+    Properties:
+      ConfigurationSetName: !Ref SesConfigurationSet
+      EventDestination:
+        Name: !Sub ${SystemName}-${EnvType}-ses-configurationseteventdestination
+        Enabled: !Ref isEventDestinationEnabled
+        CloudWatchDestination:
+          DimensionConfigurations:
+            - DimensionValueSource: messageTag
+              DimensionName: messageTag
+              DefaultDimensionValue: 0
+            - DimensionValueSource: emailHeader
+              DimensionName: emailHeader
+              DefaultDimensionValue: 0
+            - DimensionValueSource: linkTag
+              DimensionName: linkTag
+              DefaultDimensionValue: 0
+        MatchingEventTypes:
+          - send
+          - renderingFailure
+          - reject
+          - delivery
+          - bounce
+          - complaint
+          - deliveryDelay
+          - subscription
+          - open
+          - click
+
+  SesVerifiedIdentities:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: !Ref SendMailDomain
+      ConfigurationSetAttributes:
+        ConfigurationSetName: !Ref SesConfigurationSet
+      MailFromAttributes:
+        MailFromDomain: !Sub ${SendMailSubDomain}.${SendMailDomain}
+        BehaviorOnMxFailure: !Ref BehaviorOnMxFailure
+      DkimSigningAttributes:
+        NextSigningKeyLength: !Ref DkimSigningKeyLength
+      DkimAttributes:
+        SigningEnabled: !Ref isDkimAttributesSigningEnabled
+      FeedbackAttributes:
+        EmailForwardingEnabled: !Ref isFeedbackAttributesEmailForwardingEnabled

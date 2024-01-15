@@ -1,0 +1,68 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "isSendingEnabled",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "DedicatedIpPoolName",
+            "ParameterValue": ""
+        },
+        {
+            "ParameterKey": "CustomRedirectDomain",
+            "ParameterValue": ""
+        },
+        {
+            "ParameterKey": "TlsPolicy",
+            "ParameterValue": "OPTIONAL"
+        },
+        {
+            "ParameterKey": "isReputationMetricsEnabled",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "EngagementMetrics",
+            "ParameterValue": "ENABLED"
+        },
+        {
+            "ParameterKey": "OptimizedSharedDelivery",
+            "ParameterValue": "ENABLED"
+        },
+        {
+            "ParameterKey": "isEventDestinationEnabled",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "SendMailDomain",
+            "ParameterValue": "ogura-linux.dev"
+        },
+        {
+            "ParameterKey": "SendMailSubDomain",
+            "ParameterValue": "mail"
+        },
+        {
+            "ParameterKey": "BehaviorOnMxFailure",
+            "ParameterValue": "USE_DEFAULT_VALUE"
+        },
+        {
+            "ParameterKey": "DkimSigningKeyLength",
+            "ParameterValue": "RSA_2048_BIT"
+        },
+        {
+            "ParameterKey": "isDkimAttributesSigningEnabled",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "isFeedbackAttributesEmailForwardingEnabled",
+            "ParameterValue": "true"
+        }
+    ]
+}
