@@ -39,11 +39,12 @@ Resources:
           Value: !Ref EnvType
 
   IamPolicyVpcFlowLog:
-    Type: AWS::IAM::Policy
+    Type: AWS::IAM::ManagedPolicy
     Properties:
       Roles:
         - !Ref IamRoleVpcFlowLog
-      PolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-vpc-flowlog
+      ManagedPolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-vpc-flowlog
+      Description: !Sub ${SystemName}-${EnvType}-iam-policy-vpc-flowlog
       PolicyDocument:
         Version: 2012-10-17
         Statement:
