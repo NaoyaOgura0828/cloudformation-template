@@ -1,0 +1,44 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "main"
+        },
+        {
+            "ParameterKey": "AmazonSideAsn",
+            "ParameterValue": "64512"
+        },
+        {
+            "ParameterKey": "isDnsSupport",
+            "ParameterValue": "enable"
+        },
+        {
+            "ParameterKey": "isVpnEcmpSupport",
+            "ParameterValue": "enable"
+        },
+        {
+            "ParameterKey": "isDefaultRouteTableAssociation",
+            "ParameterValue": "disable"
+        },
+        {
+            "ParameterKey": "isDefaultRouteTablePropagation",
+            "ParameterValue": "disable"
+        },
+        {
+            "ParameterKey": "isMulticastSupport",
+            "ParameterValue": "disable"
+        },
+        {
+            "ParameterKey": "isAutoAcceptSharedAttachments",
+            "ParameterValue": "enable"
+        },
+        {
+            "ParameterKey": "TransitGatewayCidrBlock",
+            "ParameterValue": ""
+        }
+    ]
+}
