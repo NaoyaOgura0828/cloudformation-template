@@ -238,7 +238,7 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGateway1a
 
-  PrivateRoute2:
+  RoutePrivateNatGateway1d:
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref RouteTablePrivate1d
