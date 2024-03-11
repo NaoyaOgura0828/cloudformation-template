@@ -1,0 +1,28 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "sub"
+        },
+        {
+            "ParameterKey": "isDnsSupport",
+            "ParameterValue": "enable"
+        },
+        {
+            "ParameterKey": "isIpv6Support",
+            "ParameterValue": "disable"
+        },
+        {
+            "ParameterKey": "isApplianceModeSupport",
+            "ParameterValue": "disable"
+        },
+        {
+            "ParameterKey": "TransitGatewayId",
+            "ParameterValue": "tgw-065fc9d9a72e68211"
+        }
+    ]
+}

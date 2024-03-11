@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: TransitGateway for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  TransitGatewayAttachmentDestinationId:
+    Type: String
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Conditions:
+  hasTransitGatewayAttachmentDestinationId: !Not [ !Equals [ !Ref TransitGatewayAttachmentDestinationId, '' ] ]
+
+Resources:
+  TransitGatewayRouteTable:
+    Type: AWS::EC2::TransitGatewayRouteTable
+    Properties:
+      TransitGatewayId:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-transitgateway-id
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-transitgateway-routetable
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  TransitGatewayRouteTableAssociationRouteSource:
+    Type: AWS::EC2::TransitGatewayRouteTableAssociation
+    Properties:
+      TransitGatewayRouteTableId: !Ref TransitGatewayRouteTable
+      TransitGatewayAttachmentId:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-transitgateway-attachment-vpc-id
+  TransitGatewayRouteTablePropagationRouteSource:
+    Type: AWS::EC2::TransitGatewayRouteTablePropagation
+    Properties:
+      TransitGatewayRouteTableId: !Ref TransitGatewayRouteTable
+      TransitGatewayAttachmentId:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-transitgateway-attachment-vpc-id
+
+  TransitGatewayRouteTableAssociationRouteDestination:
+    Condition: hasTransitGatewayAttachmentDestinationId
+    Type: AWS::EC2::TransitGatewayRouteTableAssociation
+    Properties:
+      TransitGatewayRouteTableId: !Ref TransitGatewayRouteTable
+      TransitGatewayAttachmentId: !Ref TransitGatewayAttachmentDestinationId
+  TransitGatewayRouteTablePropagationRouteDestination:
+    Condition: hasTransitGatewayAttachmentDestinationId
+    Type: AWS::EC2::TransitGatewayRouteTablePropagation
+    Properties:
+      TransitGatewayRouteTableId: !Ref TransitGatewayRouteTable
+      TransitGatewayAttachmentId: !Ref TransitGatewayAttachmentDestinationId

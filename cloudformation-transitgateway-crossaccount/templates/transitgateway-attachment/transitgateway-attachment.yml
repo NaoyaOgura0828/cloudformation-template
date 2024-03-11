@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: TransitGateway for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  isDnsSupport:
+    Type: String
+    AllowedValues: [enable, disable]
+  isIpv6Support:
+    Type: String
+    AllowedValues: [enable, disable]
+  isApplianceModeSupport:
+    Type: String
+    AllowedValues: [enable, disable]
+  TransitGatewayId:
+    Type: String
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Conditions:
+  hasTransitGatewayId: !Not [ !Equals [ !Ref TransitGatewayId, '' ] ]
+
+Resources:
+  TransitGatewayAttachmentVpc:
+    Type: AWS::EC2::TransitGatewayVpcAttachment
+    Properties:
+      TransitGatewayId: !If
+        - hasTransitGatewayId
+        - !Ref TransitGatewayId
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-transitgateway-id
+      Options:
+        DnsSupport: !Ref isDnsSupport
+        Ipv6Support: !Ref isIpv6Support
+        ApplianceModeSupport: !Ref isApplianceModeSupport
+      VpcId:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-vpc-id
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1a-id
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1d-id
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-transitgateway-attachment-vpc
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+Outputs:
+  TransitGatewayAttachmentVpcId:
+    Value: !Ref TransitGatewayAttachmentVpc
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-transitgateway-attachment-vpc-id

@@ -41,7 +41,6 @@ Mappings:
 
 Conditions:
   hasTransitGatewayCidrBlock: !Not [ !Equals [ !Ref TransitGatewayCidrBlock, '' ] ]
-  isDisableDefaultRouteTableAssociation: !Equals [ !Ref isDefaultRouteTableAssociation, disable ]
 
 Resources:
   TransitGateway:
@@ -67,15 +66,8 @@ Resources:
         - Key: EnvType
           Value: !Ref EnvType
 
-  TransitGatewayRouteTable:
-    Condition: isDisableDefaultRouteTableAssociation
-    Type: AWS::EC2::TransitGatewayRouteTable
-    Properties:
-      TransitGatewayId: !Ref TransitGateway
-      Tags:
-        - Key: Name
-          Value: !Sub ${SystemName}-${EnvType}-transitgateway-routetable
-        - Key: SystemName
-          Value: !Ref SystemName
-        - Key: EnvType
-          Value: !Ref EnvType
+Outputs:
+  TransitGatewayId:
+    Value: !Ref TransitGateway
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-transitgateway-id
