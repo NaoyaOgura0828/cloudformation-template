@@ -6,7 +6,7 @@
         },
         {
             "ParameterKey": "EnvType",
-            "ParameterValue": "main"
+            "ParameterValue": "sub"
         }
     ]
 }

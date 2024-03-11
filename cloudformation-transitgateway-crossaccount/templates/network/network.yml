@@ -179,20 +179,6 @@ Resources:
         - Key: EnvType
           Value: !Ref EnvType
 
-  RoutePrivateNatGateway1a:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref RouteTablePrivate1a
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGateway1a
-
-  RoutePrivateNatGateway1d:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref RouteTablePrivate1d
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGateway1d
-
   RouteTablePrivateAssociation1a:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -258,11 +244,3 @@ Outputs:
     Value: !Ref RouteTablePrivate1d
     Export:
       Name: !Sub ${SystemName}-${EnvType}-routetable-private-1d-id
-  EipNatGateway1a:
-    Value: !Ref EipNatGateway1a
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1a-ip
-  EipNatGateway1d:
-    Value: !Ref EipNatGateway1d
-    Export:
-      Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1d-ip
