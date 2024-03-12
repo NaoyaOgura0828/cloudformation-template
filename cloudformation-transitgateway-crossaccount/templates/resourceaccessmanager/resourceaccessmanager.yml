@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ResourceAccessManager for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  isAllowExternalPrincipals:
+    Type: String
+    AllowedValues: [true, false]
+  AwsAccountDestinationId:
+    Type: String
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  ResourceAccessManagerResourceShareTransitGateway:
+    Type: AWS::RAM::ResourceShare
+    Properties:
+      Name: !Sub ${SystemName}-${EnvType}-resourceaccessmanager-resourceshare-transitgateway
+      ResourceArns:
+        - !Sub
+          - arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/${TransitGatewayId}
+          - TransitGatewayId:
+              Fn::ImportValue: !Sub ${SystemName}-${EnvType}-transitgateway-id
+      AllowExternalPrincipals: !Ref isAllowExternalPrincipals
+      PermissionArns:
+        - arn:aws:ram::aws:permission/AWSRAMDefaultPermissionTransitGateway
+      Principals:
+        - !Ref AwsAccountDestinationId
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-resourceaccessmanager-resourceshare-transitgateway
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType

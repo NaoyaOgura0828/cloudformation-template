@@ -22,7 +22,7 @@
         },
         {
             "ParameterKey": "TransitGatewayId",
-            "ParameterValue": "tgw-065fc9d9a72e68211"
+            "ParameterValue": ""
         }
     ]
 }

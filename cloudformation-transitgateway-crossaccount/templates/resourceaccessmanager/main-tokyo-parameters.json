@@ -1,0 +1,20 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "main"
+        },
+        {
+            "ParameterKey": "isAllowExternalPrincipals",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "AwsAccountDestinationId",
+            "ParameterValue": ""
+        }
+    ]
+}
