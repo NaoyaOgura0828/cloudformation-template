@@ -102,7 +102,7 @@
         },
         {
             "ParameterKey": "MetadataHttpTokens",
-            "ParameterValue": "required"
+            "ParameterValue": "optional"
         },
         {
             "ParameterKey": "InstanceMetadataTags",

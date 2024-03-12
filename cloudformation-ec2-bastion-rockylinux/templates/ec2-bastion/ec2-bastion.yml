@@ -159,11 +159,96 @@ Resources:
           Fn::Base64: !Sub |
             #!/bin/bash
 
-            # dnf update
+            # Repository update
             dnf update -y
 
-            # Install & Start CloudWatchAgent
-            # coming soon...
+            # Install packages
+            dnf install unzip -y
+            dnf install wget -y
+
+            # Install AWSCLI
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
+            rm awscliv2.zip
+
+            # Download CloudWatchAgent
+            echo "INFO Download CloudWatchAgent started"
+            while true; do
+              wget https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+              rpm -U ./amazon-cloudwatch-agent.rpm && break
+
+              # If failed to download, retry after 5 seconds
+              echo "WARNING Download CloudWatchAgent faild. retrying..."
+              sleep 5
+            done
+            echo "INFO Download CloudWatchAgent completed"
+
+            # Create CloudWatchAgent Config
+            cat << 'EOF' > /opt/aws/amazon-cloudwatch-agent/bin/config.json
+            {
+              "agent": {
+                "metrics_collection_interval": 60,
+                "run_as_user": "root"
+              },
+              "logs": {
+                "logs_collected": {
+                  "files": {
+                    "collect_list": [
+                      {
+                        "file_path": "/var/log/cloud-init-output.log",
+                        "log_group_name": "/aws/ec2/${SystemName}-${EnvType}-ec2-bastion/cloud-init-output",
+                        "log_stream_name": "{instance_id}"
+                      }
+                    ]
+                  }
+                }
+              },
+              "metrics": {
+                "aggregation_dimensions": [
+                  [
+                    "InstanceId"
+                  ]
+                ],
+                "append_dimensions": {
+                  "ImageId": "${!aws:ImageId}",
+                  "InstanceId": "${!aws:InstanceId}",
+                  "InstanceType": "${!aws:InstanceType}"
+                },
+                "metrics_collected": {
+                  "disk": {
+                    "measurement": [
+                      "used_percent"
+                    ],
+                    "metrics_collection_interval": 60,
+                    "resources": [
+                      "*"
+                    ]
+                  },
+                  "mem": {
+                    "measurement": [
+                      "mem_used_percent"
+                    ],
+                    "metrics_collection_interval": 60
+                  }
+                }
+              }
+            }
+            EOF
+
+            # Retrieve metadata
+            echo "INFO Retrieve metadata started"
+            while ! curl http://169.254.169.254/latest/meta-data/instance-id; do
+              echo "WARNING Failed to retrieve metadata. retrying..."
+              sleep 5
+            done
+            echo
+            echo "INFO Retrieve metadata completed"
+
+            # Start CloudWatchAgent
+            echo "INFO CloudWatchAgent starting..."
+            /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
+            echo "INFO CloudWatchAgent started"
 
             exit 0
       TagSpecifications:

@@ -22,6 +22,9 @@ Resources:
     Properties:
       RoleName: !Sub ${SystemName}-${EnvType}-iam-role-ec2-bastion
       Description: !Sub ${SystemName}-${EnvType}-iam-role-ec2-bastion
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -37,44 +40,6 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
-
-  # 要IAM Policy作成
-  # IamPolicyEc2Bastion:
-  #   Type: AWS::IAM::Policy
-  #   Properties:
-  #     Roles:
-  #       - !Ref IamRoleEc2Bastion
-  #     PolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-ec2
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Sid: AllowEc2
-  #           Effect: Allow
-  #           Action:
-  #             - ec2:DescribeKeyPairs
-  #           Resource:
-  #             - '*'
-  #         - Sid: AllowKms
-  #           Effect: Allow
-  #           Action:
-  #             - kms:Decrypt
-  #           Resource:
-  #             - '*'
-  #         - Sid: AllowRoute53
-  #           Effect: Allow
-  #           Action:
-  #             - route53:ChangeResourceRecordSets
-  #             - route53:ListHostedZones
-  #             - route53:ListHostedZonesByName
-  #             - route53:ListResourceRecordSets
-  #           Resource:
-  #             - '*'
-  #         - Sid: AllowSystemsManager
-  #           Effect: Allow
-  #           Action:
-  #             - ssm:GetParameter
-  #           Resource:
-  #             - '*'
 
   IamInstanceProfileBastion:
     Type: AWS::IAM::InstanceProfile
