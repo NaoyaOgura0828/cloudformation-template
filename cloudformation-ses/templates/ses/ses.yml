@@ -59,8 +59,8 @@ Mappings:
       3rd: ap-northeast-1d
 
 Conditions:
-  HasDedicatedIpPoolName: !Not [ !Equals [ !Ref DedicatedIpPoolName, '' ] ]
-  HasCustomRedirectDomain: !Not [ !Equals [ !Ref CustomRedirectDomain, '' ] ]
+  hasDedicatedIpPoolName: !Not [ !Equals [ !Ref DedicatedIpPoolName, '' ] ]
+  hasCustomRedirectDomain: !Not [ !Equals [ !Ref CustomRedirectDomain, '' ] ]
 
 Resources:
   SesVdmAttributes:
@@ -79,12 +79,12 @@ Resources:
       Name: !Sub ${SystemName}-${EnvType}-ses-configurationset
       DeliveryOptions:
         SendingPoolName: !If
-          - HasDedicatedIpPoolName
+          - hasDedicatedIpPoolName
           - !Ref DedicatedIpPoolName
           - !Ref AWS::NoValue
         TlsPolicy: !Ref TlsPolicy
       TrackingOptions: !If
-        - HasCustomRedirectDomain
+        - hasCustomRedirectDomain
         - CustomRedirectDomain:
             !Ref CustomRedirectDomain
         - !Ref AWS::NoValue
