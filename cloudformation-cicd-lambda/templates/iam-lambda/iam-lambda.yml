@@ -22,8 +22,6 @@ Resources:
     Properties:
       RoleName: !Sub ${SystemName}-${EnvType}-iam-role-lambda-helloworld
       Description: !Sub ${SystemName}-${EnvType}-iam-role-lambda-helloworld
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -40,19 +38,21 @@ Resources:
         - Key: EnvType
           Value: !Ref EnvType
 
-  # IamPolicyEcsTaskExecution:
-  #   Type: AWS::IAM::ManagedPolicy
-  #   Properties:
-  #     Roles:
-  #       - !Ref IamRoleEcsTaskExecution
-  #     ManagedPolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-ecs-task-execution
-  #     Description: !Sub ${SystemName}-${EnvType}-iam-policy-ecs-task-execution
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Sid: AllowCloudWatchLogs
-  #           Effect: Allow
-  #           Action:
-  #             - logs:CreateLogGroup
-  #           Resource:
-  #             - '*'
+  IamPolicyLambdaHelloworld:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Roles:
+        - !Ref IamRoleLambdaHelloworld
+      ManagedPolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-lambda-helloworld
+      Description: !Sub ${SystemName}-${EnvType}-iam-policy-lambda-helloworld
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowCloudWatchLogs
+            Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              - '*'
