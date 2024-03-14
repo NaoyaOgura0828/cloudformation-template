@@ -80,12 +80,6 @@ Resources:
     Properties:
       RoleName: !Sub ${SystemName}-${EnvType}-iam-role-codepipeline
       Description: !Sub ${SystemName}-${EnvType}-iam-role-codepipeline
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
-        - arn:aws:iam::aws:policy/AmazonECS_FullAccess
-        - arn:aws:iam::aws:policy/AmazonS3FullAccess
-        - arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess
-        - arn:aws:iam::aws:policy/AWSKeyManagementServicePowerUser
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -101,6 +95,37 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
+
+  IamPolicyCodePipeline:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Roles:
+        - !Ref IamRoleCodePipeline
+      ManagedPolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-codepipeline
+      Description: !Sub ${SystemName}-${EnvType}-iam-policy-codepipeline
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowCodeBuild
+            Effect: Allow
+            Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+            Resource:
+              - '*'
+          - Sid: AllowEcr
+            Effect: Allow
+            Action:
+              - ecr:DescribeImages
+            Resource:
+              - '*'
+          - Sid: AllowS3
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+            Resource:
+              - '*'
 
   IamRoleEventBridgeCodePipeline:
     Type: AWS::IAM::Role
