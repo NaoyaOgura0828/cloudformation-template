@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CodeBuild for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  ReleaseImageTag:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  BuildEnvironmentImage:
+    Type: String
+  BuildEnvironmentSpec:
+    Type: String
+  BuildEnvironmentType:
+    Type: String
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  CodeBuildLambdaHelloworld:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${SystemName}-${EnvType}-codebuild-lambda-helloworld
+      Description: !Sub ${SystemName}-${EnvType}-codebuild-lambda-helloworld
+      Visibility: PRIVATE
+      Environment:
+        Image: !Ref BuildEnvironmentImage
+        ComputeType: !Ref BuildEnvironmentSpec
+        Type: !Ref BuildEnvironmentType
+        PrivilegedMode: true
+        ImagePullCredentialsType: CODEBUILD
+        EnvironmentVariables:
+          - Name: ECR_REPOSITORY_NAME
+            Type: PLAINTEXT
+            Value: helloworld
+          - Name: RELEASE_IMAGE_TAG
+            Type: PLAINTEXT
+            Value: !Ref ReleaseImageTag
+      Source:
+        Type: NO_SOURCE
+        GitCloneDepth: 1
+        InsecureSsl: false
+        BuildSpec:  !Sub
+          |
+          version: 0.2
+
+          phases:
+            build:
+              commands:
+                # Setup ECR Repository URI
+                - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPOSITORY_NAME --region $AWS_DEFAULT_REGION | jq -r ".imageDetails[] | select(.imageTags? and any(.imageTags[]; . == \"$RELEASE_IMAGE_TAG\")) | .imageTags[] | select(test(\"^[0-9].*$\"))")
+                - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+                - ECR_IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
+                # Update Lambda function
+                - aws lambda update-function-code --function-name ${SystemName}-${EnvType}-lambda-$ECR_REPOSITORY_NAME --image-uri $ECR_IMAGE_URI
+      TimeoutInMinutes: 60
+      QueuedTimeoutInMinutes: 480
+      ServiceRole: !Sub arn:aws:iam::${AWS::AccountId}:role/${SystemName}-${EnvType}-iam-role-codebuild
+      BadgeEnabled: false
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Cache:
+        Type: NO_CACHE
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+          GroupName: !Sub /aws/codebuild/${SystemName}-${EnvType}-codebuild-lambda-helloworld
+        S3Logs:
+          Status: DISABLED
+          EncryptionDisabled: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-codebuild-lambda-helloworld
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType

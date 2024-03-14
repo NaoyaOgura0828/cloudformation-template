@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CodePipeline for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  ReleaseImageTag:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  CodePipelineLambdaHelloworld:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub ${SystemName}-${EnvType}-codepipeline-lambda-helloworld
+      RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${SystemName}-${EnvType}-iam-role-codepipeline
+      ArtifactStore:
+        Type: S3
+        Location: !Sub ${SystemName}-${EnvType}-s3-artifact-${AWS::AccountId}-${AWS::Region}
+      RestartExecutionOnUpdate: false
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              RunOrder: 1
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: ECR
+                Version: 1
+              Region: !Ref AWS::Region
+              Configuration:
+                RepositoryName: helloworld
+                ImageTag: !Ref ReleaseImageTag
+              OutputArtifacts:
+                - Name: SourceArtifact
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              RunOrder: 1
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Region: !Ref AWS::Region
+              Configuration:
+                ProjectName: !Sub ${SystemName}-${EnvType}-codebuild-lambda-helloworld
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuiltArtifact
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-codepipeline-lambda-helloworld
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType

@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: EventBridge Code for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  ReleaseImageTag:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  EventBridgeCodePipelineHelloworld:
+    Type: AWS::Events::Rule
+    Properties:
+      State: ENABLED
+      Name: !Sub ${SystemName}-${EnvType}-eventbridge-codepipeline-helloworld
+      Description: !Sub ${SystemName}-${EnvType}-eventbridge-codepipeline-helloworld
+      EventPattern:
+        source:
+          - aws.ecr
+        detail-type:
+          - ECR Image Action
+        detail:
+          action-type:
+            - PUSH
+          repository-name:
+            - helloworld
+          image-tag:
+            - !Ref ReleaseImageTag
+          result:
+            - SUCCESS
+      Targets:
+        - Id: !Sub ${SystemName}-${EnvType}-codepipeline-lambda-helloworld
+          Arn: !Sub arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${SystemName}-${EnvType}-codepipeline-lambda-helloworld
+          RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${SystemName}-${EnvType}-iam-role-eventbridge-codepipeline

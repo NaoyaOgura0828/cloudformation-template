@@ -1,0 +1,244 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: S3 Code for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  VersioningStatus:
+    Type: String
+    AllowedValues: [Enabled, Suspended]
+  isBucketKeyEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  SSEAlgorithm:
+    Type: String
+    AllowedValues: [aws:kms, AES256, aws:kms:dsse]
+  isEventBridgeEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  AccelerationStatus:
+    Type: String
+    AllowedValues: [Enabled, Suspended]
+  isObjectLockEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  isStaticWebsiteEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  isBlockPublicAclsEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  isIgnorePublicAclsEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  isBlockPublicPolicyEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  isRestrictPublicBucketsEnabled:
+    Type: String
+    AllowedValues: [true, false]
+  ObjectOwnership:
+    Type: String
+    AllowedValues: [ObjectWriter, BucketOwnerPreferred, BucketOwnerEnforced]
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Conditions:
+  isNotAES256: !Not [ !Equals [ !Ref SSEAlgorithm, AES256 ] ]
+  isObjectLockEnabled: !Equals [ !Ref isObjectLockEnabled, true ]
+  isStaticWebsiteEnabled: !Equals [ !Ref isStaticWebsiteEnabled, true ]
+
+Resources:
+  S3BucketArtifact:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${SystemName}-${EnvType}-s3-artifact-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration:
+        Status: !Ref VersioningStatus
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: !Ref SSEAlgorithm
+              KMSMasterKeyID: !If
+                - isNotAES256
+                - !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/${SystemName}-${EnvType}-kms-s3
+                - !Ref AWS::NoValue
+            BucketKeyEnabled: !Ref isBucketKeyEnabled
+      # IntelligentTieringConfigurations:
+      #   - IntelligentTieringConfiguration
+      # LoggingConfiguration:
+      #   LoggingConfiguration
+      NotificationConfiguration:
+        # LambdaConfigurations:
+        #   - Filter:
+        #       S3Key:
+        #         Rules:
+        #           - Name: String
+        #             Value: String
+        #     Event: String
+        #     Function: String
+        # TopicConfigurations:
+        #   - Filter:
+        #       S3Key:
+        #         Rules:
+        #           - Name: String
+        #             Value: String
+        #     Event: String
+        #     Topic: String
+        # QueueConfigurations:
+        #   - Filter:
+        #       S3Key:
+        #         Rules:
+        #           - Name: String
+        #             Value: String
+        #     Event: String
+        #     Queue: String
+        EventBridgeConfiguration:
+          EventBridgeEnabled: !Ref isEventBridgeEnabled
+      AccelerateConfiguration:
+        AccelerationStatus: !Ref AccelerationStatus
+      ObjectLockEnabled: !Ref isObjectLockEnabled
+      ObjectLockConfiguration: !If
+        - isObjectLockEnabled
+        - ObjectLockEnabled: !Ref isObjectLockEnabled
+          Rule:
+            DefaultRetention:
+              Mode: String
+              Years: Integer
+              Days: Integer
+        - !Ref AWS::NoValue
+      WebsiteConfiguration: !If
+        - isStaticWebsiteEnabled
+        - IndexDocument: String
+          ErrorDocument: String
+          RoutingRules:
+            - RoutingRule
+        - !Ref AWS::NoValue
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: !Ref isBlockPublicAclsEnabled
+        IgnorePublicAcls: !Ref isIgnorePublicAclsEnabled
+        BlockPublicPolicy: !Ref isBlockPublicPolicyEnabled
+        RestrictPublicBuckets: !Ref isRestrictPublicBucketsEnabled
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: !Ref ObjectOwnership
+      # CorsConfiguration:
+      #   CorsRules:
+      #     - Id: String
+      #       AllowedHeaders:
+      #         - String
+      #       AllowedMethods:
+      #         - String
+      #       AllowedOrigins:
+      #         - String
+      #       ExposedHeaders:
+      #         - String
+      #       MaxAge: Integer
+      # AnalyticsConfigurations:
+      #   - Id: String
+      #     Prefix: String
+      #     StorageClassAnalysis:
+      #       DataExport:
+      #         OutputSchemaVersion: V_1
+      #         Destination:
+      #           Format: String
+      #           BucketAccountId: String
+      #           BucketArn: String
+      #           Prefix: String
+      #     TagFilters:
+      #       - Key: String
+      #         Value: String
+      # LifecycleConfiguration:
+      #   Rules:
+      #     - Id: String
+      #       Status: isLifecycleRuleEnabled
+      #       Prefix: String
+      #       TagFilters:
+      #         - Key: String
+      #           Value: String
+      #       ObjectSizeGreaterThan: String
+      #       ObjectSizeLessThan: String
+      #       Transitions:
+      #         - StorageClass: String
+      #           TransitionInDays: Integer
+      #           NewerNoncurrentVersions: Integer
+      #       NoncurrentVersionTransitions:
+      #         - StorageClass: String
+      #           TransitionInDays: Integer
+      #       ExpirationInDays: Integer
+      #       NoncurrentVersionExpiration:
+      #         NoncurrentDays: Integer
+      #         NewerNoncurrentVersions: Integer
+      #       ExpiredObjectDeleteMarker: isExpiredObjectDeleteMarker
+      #       AbortIncompleteMultipartUpload:
+      #         DaysAfterInitiation: Integer
+      # ReplicationConfiguration:
+      #   Rules:
+      #     - Id: String
+      #       Status: String
+      #       Priority: Integer
+      #       Filter:
+      #         Prefix: String
+      #         TagFilter:
+      #           Key: String
+      #           Value: String
+      #         And:
+      #           Prefix: String
+      #           TagFilters:
+      #             - Key: String
+      #               Value: String
+      #       Destination:
+      #         Account: String
+      #         Bucket: String
+      #         Prefix: String
+      #         AccessControlTranslation:
+      #           Owner: String
+      #         EncryptionConfiguration:
+      #           ReplicaKmsKeyID: String
+      #         StorageClass: String
+      #         ReplicationTime:
+      #           Status: String
+      #           Time:
+      #             Minutes: Integer
+      #         Metrics:
+      #           Status: String
+      #           EventThreshold:
+      #             Minutes: Integer
+      #       DeleteMarkerReplication:
+      #         Status: String
+
+      #       SourceSelectionCriteria:
+      #         ReplicaModifications:
+      #           Status: String
+      #         SseKmsEncryptedObjects:
+      #           Status: String
+      #   Role: String
+      # InventoryConfigurations:
+      #   - Id: String
+      #     Enabled: Boolean
+      #     Prefix: String
+      #     IncludedObjectVersions: String
+      #     Destination:
+      #       BucketAccountId: String
+      #       BucketArn: String
+      #       Prefix: String
+      #       Format: String
+      #     ScheduleFrequency: String
+      #     OptionalFields:
+      #       - String
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-s3-artifact-${AWS::AccountId}-${AWS::Region}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
