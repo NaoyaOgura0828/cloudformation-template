@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM Lambda for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  IamRoleLambdaHelloworld:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${SystemName}-${EnvType}-iam-role-lambda-helloworld
+      Description: !Sub ${SystemName}-${EnvType}-iam-role-lambda-helloworld
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowSecurityTokenService
+            Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: lambda.amazonaws.com
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-iam-role-lambda-helloworld
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  # IamPolicyEcsTaskExecution:
+  #   Type: AWS::IAM::ManagedPolicy
+  #   Properties:
+  #     Roles:
+  #       - !Ref IamRoleEcsTaskExecution
+  #     ManagedPolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-ecs-task-execution
+  #     Description: !Sub ${SystemName}-${EnvType}-iam-policy-ecs-task-execution
+  #     PolicyDocument:
+  #       Version: 2012-10-17
+  #       Statement:
+  #         - Sid: AllowCloudWatchLogs
+  #           Effect: Allow
+  #           Action:
+  #             - logs:CreateLogGroup
+  #           Resource:
+  #             - '*'
