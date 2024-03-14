@@ -28,7 +28,7 @@ Resources:
       Description: !Sub ${SystemName}-${EnvType}-lambda-helloworld
       PackageType: Image
       Code:
-        ImageUri: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/helloworld:${groupmanagerImageTag}
+        ImageUri: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/helloworld:${helloworldImageTag}
       Architectures:
         - x86_64
       MemorySize: !Ref LambdaMemorySize

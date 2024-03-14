@@ -10,7 +10,7 @@
         },
         {
             "ParameterKey": "helloworldImageTag",
-            "ParameterValue": "20240309-aaaaaaa-1234567890"
+            "ParameterValue": "template"
         },
         {
             "ParameterKey": "LambdaMemorySize",
