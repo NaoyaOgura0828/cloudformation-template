@@ -22,12 +22,6 @@ Resources:
     Properties:
       RoleName: !Sub ${SystemName}-${EnvType}-iam-role-codebuild
       Description: !Sub ${SystemName}-${EnvType}-iam-role-codebuild
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/amazonec2containerregistryreadonly
-        - arn:aws:iam::aws:policy/amazons3fullaccess
-        - arn:aws:iam::aws:policy/awskeymanagementservicepoweruser
-        - arn:aws:iam::aws:policy/cloudwatchlogsfullaccess
-        - arn:aws:iam::aws:policy/awslambda_fullaccess
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -44,17 +38,54 @@ Resources:
         - Key: EnvType
           Value: !Ref EnvType
 
+  IamPolicyCodeBuild:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Roles:
+        - !Ref IamRoleCodeBuild
+      ManagedPolicyName: !Sub ${SystemName}-${EnvType}-iam-policy-codebuild
+      Description: !Sub ${SystemName}-${EnvType}-iam-policy-codebuild
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowCloudWatchLogs
+            Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              - '*'
+          - Sid: AllowEcr
+            Effect: Allow
+            Action:
+              - ecr:DescribeImages
+            Resource:
+              - '*'
+          - Sid: AllowLambda
+            Effect: Allow
+            Action:
+              - lambda:UpdateFunctionCode
+            Resource:
+              - '*'
+          - Sid: AllowS3
+            Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource:
+              - '*'
+
   IamRoleCodePipeline:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub ${SystemName}-${EnvType}-iam-role-codepipeline
       Description: !Sub ${SystemName}-${EnvType}-iam-role-codepipeline
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/amazonec2containerregistryreadonly
-        - arn:aws:iam::aws:policy/amazons3fullaccess
-        - arn:aws:iam::aws:policy/awskeymanagementservicepoweruser
-        - arn:aws:iam::aws:policy/cloudwatchlogsfullaccess
-        - arn:aws:iam::aws:policy/awslambda_fullaccess
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonECS_FullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess
+        - arn:aws:iam::aws:policy/AWSKeyManagementServicePowerUser
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
