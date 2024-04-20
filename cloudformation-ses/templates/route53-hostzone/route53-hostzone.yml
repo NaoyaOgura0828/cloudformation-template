@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Route53 HostZone Bastion for template
+Description: Route53 HostZone for template
 
 Parameters:
   SystemName:
@@ -20,15 +20,15 @@ Mappings:
       3rd: ap-northeast-1d
 
 Resources:
-  HostedZoneBastion:
+  HostedZoneParentNakedDomain:
     Type: AWS::Route53::HostedZone
     Properties:
-      Name: !Sub bastion.${ParentNakedDomain}
+      Name: !Ref ParentNakedDomain
       HostedZoneConfig:
         Comment: Domain for Bastion
       HostedZoneTags:
         - Key: Name
-          Value: !Sub bastion.${ParentNakedDomain}
+          Value: !Ref ParentNakedDomain
         - Key: SystemName
           Value: !Ref SystemName
         - Key: EnvType
