@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ElastiCache for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  MajorEngineVersion:
+    Type: Number
+  UserGroupId:
+    Type: String
+  SnapshotRetentionLimit:
+    Type: Number
+  DailySnapshotTime:
+    Type: String
+  DataStorageMinimum:
+    Type: Number
+  DataStorageMaximum:
+    Type: Number
+  ECpuPerSecondMinimum:
+    Type: Number
+  ECpuPerSecondMaximum:
+    Type: Number
+  FinalSnapshotName:
+    Type: String
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Conditions:
+  hasUserGroupId: !Not [ !Equals [ !Ref UserGroupId, ''] ]
+  hasFinalSnapshotName: !Not [ !Equals [ !Ref FinalSnapshotName, ''] ]
+
+Resources:
+  ElastiCacheServerlessRedis:
+    Type: AWS::ElastiCache::ServerlessCache
+    Properties:
+      ServerlessCacheName: !Sub ${SystemName}-${EnvType}-redis
+      Description: !Sub ${SystemName}-${EnvType}-redis
+      Engine: redis
+      MajorEngineVersion: !Ref MajorEngineVersion
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1a-id
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1d-id
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-securitygroup-elasticache-serverless-redis-id
+      KmsKeyId: !Sub alias/${SystemName}-${EnvType}-kms-elasticache-serverless-redis
+      UserGroupId: !If
+        - hasUserGroupId
+        - !Ref UserGroupId
+        - !Ref AWS::NoValue
+      SnapshotRetentionLimit: !Ref SnapshotRetentionLimit
+      DailySnapshotTime: !Sub '${DailySnapshotTime}'
+      CacheUsageLimits:
+        DataStorage:
+          Unit: GB
+          Minimum: !Ref DataStorageMinimum
+          Maximum: !Ref DataStorageMaximum
+        ECPUPerSecond:
+          Minimum: !Ref ECpuPerSecondMinimum
+          Maximum: !Ref ECpuPerSecondMaximum
+      FinalSnapshotName: !If
+        - hasFinalSnapshotName
+        - !Ref !Ref FinalSnapshotName
+        - !Ref AWS::NoValue
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-redis
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType

@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: SecurityGroup ElastiCache for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  SecurityGroupElasticacheServerlessRedis:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${SystemName}-${EnvType}-securitygroup-elasticache-serverless-redis
+      GroupDescription: !Sub ${SystemName}-${EnvType}-securitygroup-elasticache-serverless-redis
+      VpcId:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-vpc-id
+      SecurityGroupIngress:
+        - Description: Redis from FullOpen
+          CidrIp: 0.0.0.0/0
+          FromPort: 6379
+          ToPort: 6379
+          IpProtocol: tcp
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-securitygroup-elasticache-serverless-redis
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+Outputs:
+  SecurityGroupElasticacheServerlessRedisId:
+    Value: !Ref SecurityGroupElasticacheServerlessRedis
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-securitygroup-elasticache-serverless-redis-id

@@ -1,0 +1,48 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "MajorEngineVersion",
+            "ParameterValue": "7"
+        },
+        {
+            "ParameterKey": "UserGroupId",
+            "ParameterValue": ""
+        },
+        {
+            "ParameterKey": "SnapshotRetentionLimit",
+            "ParameterValue": "1"
+        },
+        {
+            "ParameterKey": "DailySnapshotTime",
+            "ParameterValue": "16:00"
+        },
+        {
+            "ParameterKey": "DataStorageMinimum",
+            "ParameterValue": "1"
+        },
+        {
+            "ParameterKey": "DataStorageMaximum",
+            "ParameterValue": "2"
+        },
+        {
+            "ParameterKey": "ECpuPerSecondMinimum",
+            "ParameterValue": "1000"
+        },
+        {
+            "ParameterKey": "ECpuPerSecondMaximum",
+            "ParameterValue": "2000"
+        },
+        {
+            "ParameterKey": "FinalSnapshotName",
+            "ParameterValue": ""
+        }
+    ]
+}
