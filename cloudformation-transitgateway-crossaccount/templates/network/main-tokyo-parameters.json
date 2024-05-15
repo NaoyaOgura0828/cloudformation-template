@@ -27,6 +27,10 @@
         {
             "ParameterKey": "SubnetPrivateCidrBlock1d",
             "ParameterValue": "10.0.20.0/24"
+        },
+        {
+            "ParameterKey": "isCreateNatGateway",
+            "ParameterValue": "false"
         }
     ]
 }

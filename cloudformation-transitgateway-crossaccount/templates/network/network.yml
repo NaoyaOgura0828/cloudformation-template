@@ -23,6 +23,9 @@ Parameters:
   SubnetPrivateCidrBlock1d:
     Type: String
     AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  isCreateNatGateway:
+    Type: String
+    AllowedValues: [true, false]
 
 Mappings:
   AzMap:
@@ -30,6 +33,9 @@ Mappings:
       1st: ap-northeast-1a
       2nd: ap-northeast-1c
       3rd: ap-northeast-1d
+
+Conditions:
+  isCreateNatGatewayTrue: !Equals [ !Ref isCreateNatGateway, true ]
 
 Resources:
   Vpc:
@@ -179,6 +185,78 @@ Resources:
         - Key: EnvType
           Value: !Ref EnvType
 
+  EipNatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eip-natgateway-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EipNatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eip-natgateway-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  NatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !Ref SubnetPublic1a
+      ConnectivityType: public
+      AllocationId: !GetAtt EipNatGateway1a.AllocationId
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-natgateway-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  NatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !Ref SubnetPublic1d
+      ConnectivityType: public
+      AllocationId: !GetAtt EipNatGateway1d.AllocationId
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-natgateway-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  RoutePrivateNatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1a
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1a
+
+  RoutePrivateNatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1d
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1d
+
   RouteTablePrivateAssociation1a:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -244,3 +322,13 @@ Outputs:
     Value: !Ref RouteTablePrivate1d
     Export:
       Name: !Sub ${SystemName}-${EnvType}-routetable-private-1d-id
+  EipNatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Value: !Ref EipNatGateway1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1a-ip
+  EipNatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Value: !Ref EipNatGateway1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1d-ip

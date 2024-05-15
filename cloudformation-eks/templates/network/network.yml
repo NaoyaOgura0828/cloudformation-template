@@ -23,6 +23,9 @@ Parameters:
   SubnetPrivateCidrBlock1d:
     Type: String
     AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  isCreateNatGateway:
+    Type: String
+    AllowedValues: [true, false]
 
 Mappings:
   AzMap:
@@ -30,6 +33,9 @@ Mappings:
       1st: ap-northeast-1a
       2nd: ap-northeast-1c
       3rd: ap-northeast-1d
+
+Conditions:
+  isCreateNatGatewayTrue: !Equals [ !Ref isCreateNatGateway, true ]
 
 Resources:
   Vpc:
@@ -61,10 +67,6 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
-        - Key: kubernetes.io/role/elb
-          Value: 1
-        - Key: !Sub kubernetes.io/cluster/${SystemName}-${EnvType}-eks-cluster
-          Value: owned
 
   SubnetPublic1d:
     Type: AWS::EC2::Subnet
@@ -80,10 +82,6 @@ Resources:
           Value: !Ref SystemName
         - Key: EnvType
           Value: !Ref EnvType
-        - Key: kubernetes.io/role/elb
-          Value: 1
-        - Key: !Sub kubernetes.io/cluster/${SystemName}-${EnvType}-eks-cluster
-          Value: owned
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -188,6 +186,7 @@ Resources:
           Value: !Ref EnvType
 
   EipNatGateway1a:
+    Condition: isCreateNatGatewayTrue
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
@@ -200,6 +199,7 @@ Resources:
           Value: !Ref EnvType
 
   EipNatGateway1d:
+    Condition: isCreateNatGatewayTrue
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
@@ -212,6 +212,7 @@ Resources:
           Value: !Ref EnvType
 
   NatGateway1a:
+    Condition: isCreateNatGatewayTrue
     Type: AWS::EC2::NatGateway
     Properties:
       SubnetId: !Ref SubnetPublic1a
@@ -226,6 +227,7 @@ Resources:
           Value: !Ref EnvType
 
   NatGateway1d:
+    Condition: isCreateNatGatewayTrue
     Type: AWS::EC2::NatGateway
     Properties:
       SubnetId: !Ref SubnetPublic1d
@@ -240,6 +242,7 @@ Resources:
           Value: !Ref EnvType
 
   RoutePrivateNatGateway1a:
+    Condition: isCreateNatGatewayTrue
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref RouteTablePrivate1a
@@ -247,6 +250,7 @@ Resources:
       NatGatewayId: !Ref NatGateway1a
 
   RoutePrivateNatGateway1d:
+    Condition: isCreateNatGatewayTrue
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref RouteTablePrivate1d
@@ -319,10 +323,12 @@ Outputs:
     Export:
       Name: !Sub ${SystemName}-${EnvType}-routetable-private-1d-id
   EipNatGateway1a:
+    Condition: isCreateNatGatewayTrue
     Value: !Ref EipNatGateway1a
     Export:
       Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1a-ip
   EipNatGateway1d:
+    Condition: isCreateNatGatewayTrue
     Value: !Ref EipNatGateway1d
     Export:
       Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1d-ip
