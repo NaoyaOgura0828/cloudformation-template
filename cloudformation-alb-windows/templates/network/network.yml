@@ -1,0 +1,334 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Network for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  VpcCidrBlock:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  SubnetPublicCidrBlock1a:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  SubnetPublicCidrBlock1d:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  SubnetPrivateCidrBlock1a:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  SubnetPrivateCidrBlock1d:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  isCreateNatGateway:
+    Type: String
+    AllowedValues: [true, false]
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Conditions:
+  isCreateNatGatewayTrue: !Equals [ !Ref isCreateNatGateway, true ]
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidrBlock
+      InstanceTenancy: default
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-vpc
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  SubnetPublic1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetPublicCidrBlock1a
+      AvailabilityZone: !FindInMap [AzMap, !Ref AWS::Region, 1st]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-subnet-public-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  SubnetPublic1d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetPublicCidrBlock1d
+      AvailabilityZone: !FindInMap [AzMap, !Ref AWS::Region, 3rd]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-subnet-public-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-igw
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  RouteTablePublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-routetable-public
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  RoutePublicInternetGateway:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePublic
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  RouteTablePublicAssociation1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublic1a
+      RouteTableId: !Ref RouteTablePublic
+
+  RouteTablePublicAssociation1d:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublic1d
+      RouteTableId: !Ref RouteTablePublic
+
+  SubnetPrivate1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetPrivateCidrBlock1a
+      AvailabilityZone: !FindInMap [AzMap, !Ref AWS::Region, 1st]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-subnet-private-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  SubnetPrivate1d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetPrivateCidrBlock1d
+      AvailabilityZone: !FindInMap [AzMap, !Ref AWS::Region, 3rd]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-subnet-private-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  RouteTablePrivate1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-routetable-private-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  RouteTablePrivate1d:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-routetable-private-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EipNatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eip-natgateway-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EipNatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eip-natgateway-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  NatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !Ref SubnetPublic1a
+      ConnectivityType: public
+      AllocationId: !GetAtt EipNatGateway1a.AllocationId
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-natgateway-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  NatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !Ref SubnetPublic1d
+      ConnectivityType: public
+      AllocationId: !GetAtt EipNatGateway1d.AllocationId
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-natgateway-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  RoutePrivateNatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1a
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1a
+
+  RoutePrivateNatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1d
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1d
+
+  RouteTablePrivateAssociation1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivate1a
+      RouteTableId: !Ref RouteTablePrivate1a
+
+  RouteTablePrivateAssociation1d:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivate1d
+      RouteTableId: !Ref RouteTablePrivate1d
+
+Outputs:
+  VpcId:
+    Value: !Ref Vpc
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-vpc-id
+  VpcCidr:
+    Value: !GetAtt Vpc.CidrBlock
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-vpc-cidr
+  SubnetPublic1aId:
+    Value: !Ref SubnetPublic1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-public-1a-id
+  SubnetPublic1aCidr:
+    Value: !Ref SubnetPublicCidrBlock1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-public-1a-cidr
+  SubnetPublic1dId:
+    Value: !Ref SubnetPublic1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-public-1d-id
+  SubnetPublic1dCidr:
+    Value: !Ref SubnetPublicCidrBlock1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-public-1d-cidr
+  RouteTablePublicId:
+    Value: !Ref RouteTablePublic
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-routetable-public-id
+  SubnetPrivate1aId:
+    Value: !Ref SubnetPrivate1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-private-1a-id
+  SubnetPrivate1aCidr:
+    Value: !Ref SubnetPrivateCidrBlock1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-private-1a-cidr
+  SubnetPrivate1dId:
+    Value: !Ref SubnetPrivate1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-private-1d-id
+  SubnetPrivate1dCidr:
+    Value: !Ref SubnetPrivateCidrBlock1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-private-1d-cidr
+  RouteTablePrivate1aId:
+    Value: !Ref RouteTablePrivate1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-routetable-private-1a-id
+  RouteTablePrivate1dId:
+    Value: !Ref RouteTablePrivate1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-routetable-private-1d-id
+  EipNatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Value: !Ref EipNatGateway1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1a-ip
+  EipNatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Value: !Ref EipNatGateway1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1d-ip

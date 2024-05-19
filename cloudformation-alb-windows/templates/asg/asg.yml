@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AutoScalingGroup for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  MinSize:
+    Type: Number
+  MaxSize:
+    Type: Number
+  DesiredCapacity:
+    Type: Number
+  HealthCheckGracePeriod:
+    Type: Number
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  AutoScalingGroupLk:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub ${SystemName}-${EnvType}-asg
+      LaunchTemplate:
+        LaunchTemplateId:
+          Fn::ImportValue: !Sub ${SystemName}-${EnvType}-launchtemplate-windows-id
+        Version: 1
+      MinSize: !Ref MinSize
+      MaxSize: !Ref MaxSize
+      DesiredCapacity: !Ref DesiredCapacity
+      AvailabilityZones:
+        - !FindInMap [AzMap, !Ref AWS::Region, 1st]
+        - !FindInMap [AzMap, !Ref AWS::Region, 3rd]
+      TargetGroupARNs:
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-tg-arn
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: !Ref HealthCheckGracePeriod
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-public-subnet1
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-public-subnet2
+      TerminationPolicies:
+        - Default
+      NewInstancesProtectedFromScaleIn: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-asg
+          PropagateAtLaunch: false
+        - Key: SystemName
+          Value: !Ref SystemName
+          PropagateAtLaunch: false
+        - Key: EnvType
+          Value: !Ref EnvType
+          PropagateAtLaunch: false

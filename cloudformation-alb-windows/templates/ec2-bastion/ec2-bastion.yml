@@ -1,0 +1,284 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: EC2 Bastion for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  AmiId:
+    Type: String
+  InstanceType:
+    Type: String
+  KeyName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  VolumeSize:
+    Type: Number
+  VolumeType:
+    Type: String
+    AllowedValues: [gp2, gp3, io1, io2, sc1, standard, st1]
+  Iops:
+    Type: String
+  isDeleteOnTermination:
+    Type: String
+    AllowedValues: [true, false]
+  isEncrypted:
+    Type: String
+    AllowedValues: [true, false]
+  Throughput:
+    Type: String
+  HostnameType:
+    Type: String
+    AllowedValues: [ip-name, resource-name]
+  isEnableResourceNameDnsARecord:
+    Type: String
+    AllowedValues: [true, false]
+  isEnableResourceNameDnsAAAARecord:
+    Type: String
+    AllowedValues: [true, false]
+  AutoRecovery:
+    Type: String
+    AllowedValues: [default, disabled]
+  InstanceInitiatedShutdownBehavior:
+    Type: String
+    AllowedValues: [stop, terminate]
+  isHibernation:
+    Type: String
+    AllowedValues: [true, false]
+  isDisableApiTermination:
+    Type: String
+    AllowedValues: [true, false]
+  isDisableApiStop:
+    Type: String
+    AllowedValues: [true, false]
+  isDetailedMonitoring:
+    Type: String
+    AllowedValues: [true, false]
+  isEbsOptimized:
+    Type: String
+    AllowedValues: [true, false]
+  CapacityReservationPreference:
+    Type: String
+    AllowedValues: [open, none]
+  Tenancy:
+    Type: String
+    AllowedValues: [default, dedicated, host]
+  isNitroEnclave:
+    Type: String
+    AllowedValues: [true, false]
+  MetadataHttpEndpoint:
+    Type: String
+    AllowedValues: [enabled, disabled]
+  MetadataHttpTokens:
+    Type: String
+    AllowedValues: [required, optional]
+  InstanceMetadataTags:
+    Type: String
+    AllowedValues: [enabled, disabled]
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Conditions:
+  isEncryptedTrue: !Equals [ !Ref isEncrypted, true ]
+
+Resources:
+  LaunchTemplateBastion:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub ${SystemName}-${EnvType}-launchtemplate-bastion
+      VersionDescription: Initial Version
+      LaunchTemplateData:
+        ImageId: !Ref AmiId
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        NetworkInterfaces:
+          - SubnetId: !Ref AWS::NoValue
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-securitygroup-ec2-bastion-id
+        BlockDeviceMappings:
+          - DeviceName: /dev/sda1
+            Ebs:
+              SnapshotId: !Ref AWS::NoValue
+              VolumeSize: !Ref VolumeSize
+              VolumeType: !Ref VolumeType
+              Iops: !Ref Iops
+              DeleteOnTermination: !Ref isDeleteOnTermination
+              Encrypted: !Ref isEncrypted
+              KmsKeyId: !If
+                - isEncryptedTrue
+                - !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/${SystemName}-${EnvType}-kms-ebs
+                - !Ref AWS::NoValue
+              Throughput: !Ref Throughput
+        IamInstanceProfile:
+          Arn: !Sub arn:aws:iam::${AWS::AccountId}:instance-profile/${SystemName}-${EnvType}-iam-instanceprofile-bastion
+        PrivateDnsNameOptions:
+          HostnameType: !Ref HostnameType
+          EnableResourceNameDnsARecord: !Ref isEnableResourceNameDnsARecord
+          EnableResourceNameDnsAAAARecord: !Ref isEnableResourceNameDnsAAAARecord
+        MaintenanceOptions:
+          AutoRecovery: !Ref AutoRecovery
+        InstanceInitiatedShutdownBehavior: !Ref InstanceInitiatedShutdownBehavior
+        HibernationOptions:
+          Configured: !Ref isHibernation
+        DisableApiTermination: !Ref isDisableApiTermination
+        DisableApiStop: !Ref isDisableApiStop
+        Monitoring:
+          Enabled: !Ref isDetailedMonitoring
+        ElasticGpuSpecifications: !Ref AWS::NoValue
+        CreditSpecification:
+          CpuCredits: !Ref AWS::NoValue
+        EbsOptimized: !Ref isEbsOptimized
+        CapacityReservationSpecification:
+          CapacityReservationPreference: !Ref CapacityReservationPreference
+        Placement:
+          Tenancy: !Ref Tenancy
+        EnclaveOptions:
+          Enabled: !Ref isNitroEnclave
+        MetadataOptions:
+          HttpEndpoint: !Ref MetadataHttpEndpoint
+          HttpTokens: !Ref MetadataHttpTokens
+          InstanceMetadataTags: !Ref InstanceMetadataTags
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub ${SystemName}-${EnvType}-ec2-bastion
+              - Key: SystemName
+                Value: !Ref SystemName
+              - Key: EnvType
+                Value: !Ref EnvType
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+
+            # Repository update
+            dnf update -y
+
+            # Install packages
+            dnf install unzip -y
+            dnf install wget -y
+
+            # Install AWSCLI
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
+            rm awscliv2.zip
+
+            # Download CloudWatchAgent
+            echo "INFO Download CloudWatchAgent started"
+            while true; do
+              wget https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+              rpm -U ./amazon-cloudwatch-agent.rpm && break
+
+              # If failed to download, retry after 5 seconds
+              echo "WARNING Download CloudWatchAgent faild. retrying..."
+              sleep 5
+            done
+            echo "INFO Download CloudWatchAgent completed"
+
+            # Create CloudWatchAgent Config
+            cat << 'EOF' > /opt/aws/amazon-cloudwatch-agent/bin/config.json
+            {
+              "agent": {
+                "metrics_collection_interval": 60,
+                "run_as_user": "root"
+              },
+              "logs": {
+                "logs_collected": {
+                  "files": {
+                    "collect_list": [
+                      {
+                        "file_path": "/var/log/cloud-init-output.log",
+                        "log_group_name": "/aws/ec2/${SystemName}-${EnvType}-ec2-bastion/cloud-init-output",
+                        "log_stream_name": "{instance_id}"
+                      }
+                    ]
+                  }
+                }
+              },
+              "metrics": {
+                "aggregation_dimensions": [
+                  [
+                    "InstanceId"
+                  ]
+                ],
+                "append_dimensions": {
+                  "ImageId": "${!aws:ImageId}",
+                  "InstanceId": "${!aws:InstanceId}",
+                  "InstanceType": "${!aws:InstanceType}"
+                },
+                "metrics_collected": {
+                  "disk": {
+                    "measurement": [
+                      "used_percent"
+                    ],
+                    "metrics_collection_interval": 60,
+                    "resources": [
+                      "*"
+                    ]
+                  },
+                  "mem": {
+                    "measurement": [
+                      "mem_used_percent"
+                    ],
+                    "metrics_collection_interval": 60
+                  }
+                }
+              }
+            }
+            EOF
+
+            # Retrieve metadata
+            echo "INFO Retrieve metadata started"
+            while ! curl http://169.254.169.254/latest/meta-data/instance-id; do
+              echo "WARNING Failed to retrieve metadata. retrying..."
+              sleep 5
+            done
+            echo
+            echo "INFO Retrieve metadata completed"
+
+            # Start CloudWatchAgent
+            echo "INFO CloudWatchAgent starting..."
+            /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
+            echo "INFO CloudWatchAgent started"
+
+            exit 0
+      TagSpecifications:
+        - ResourceType: launch-template
+          Tags:
+            - Key: Name
+              Value: !Sub ${SystemName}-${EnvType}-launchtemplate-bastion
+            - Key: SystemName
+              Value: !Ref SystemName
+            - Key: EnvType
+              Value: !Ref EnvType
+
+  Ec2InstanceBastion:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplateBastion
+        Version: 1
+      SubnetId:
+        Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-public-1a-id
+
+  EipBasiton:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref Ec2InstanceBastion
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eip-bastion
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType

@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: KMS for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  KmsEbs:
+    Type: AWS::KMS::Key
+    Properties:
+      Enabled: true
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      Origin: AWS_KMS
+      MultiRegion: true
+      Description: !Sub ${SystemName}-${EnvType}-kms-ebs
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Action:
+              - kms:*
+            Resource: '*'
+            Principal:
+              AWS:
+                - !Sub arn:aws:iam::${AWS::AccountId}:root
+      EnableKeyRotation: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-kms-ebs
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  KmsAliasEbs:
+    Type: AWS::KMS::Alias
+    Properties:
+      TargetKeyId: !Ref KmsEbs
+      AliasName: !Sub alias/${SystemName}-${EnvType}-kms-ebs

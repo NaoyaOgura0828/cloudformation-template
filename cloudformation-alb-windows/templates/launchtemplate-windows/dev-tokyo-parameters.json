@@ -1,0 +1,112 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "AmiId",
+            "ParameterValue": "ami-0da627640b8e12ab3"
+        },
+        {
+            "ParameterKey": "InstanceType",
+            "ParameterValue": "m5a.large"
+        },
+        {
+            "ParameterKey": "KeyName",
+            "ParameterValue": "template-key"
+        },
+        {
+            "ParameterKey": "VolumeSize",
+            "ParameterValue": "30"
+        },
+        {
+            "ParameterKey": "VolumeType",
+            "ParameterValue": "gp3"
+        },
+        {
+            "ParameterKey": "Iops",
+            "ParameterValue": "3000"
+        },
+        {
+            "ParameterKey": "isDeleteOnTermination",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "isEncrypted",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "Throughput",
+            "ParameterValue": "125"
+        },
+        {
+            "ParameterKey": "HostnameType",
+            "ParameterValue": "ip-name"
+        },
+        {
+            "ParameterKey": "isEnableResourceNameDnsARecord",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isEnableResourceNameDnsAAAARecord",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "AutoRecovery",
+            "ParameterValue": "default"
+        },
+        {
+            "ParameterKey": "InstanceInitiatedShutdownBehavior",
+            "ParameterValue": "stop"
+        },
+        {
+            "ParameterKey": "isHibernation",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isDisableApiTermination",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isDisableApiStop",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isDetailedMonitoring",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "isEbsOptimized",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "CapacityReservationPreference",
+            "ParameterValue": "none"
+        },
+        {
+            "ParameterKey": "Tenancy",
+            "ParameterValue": "default"
+        },
+        {
+            "ParameterKey": "isNitroEnclave",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "MetadataHttpEndpoint",
+            "ParameterValue": "enabled"
+        },
+        {
+            "ParameterKey": "MetadataHttpTokens",
+            "ParameterValue": "optional"
+        },
+        {
+            "ParameterKey": "InstanceMetadataTags",
+            "ParameterValue": "disabled"
+        }
+    ]
+}

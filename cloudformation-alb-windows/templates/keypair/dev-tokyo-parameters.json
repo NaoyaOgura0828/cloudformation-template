@@ -1,0 +1,24 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "KeyName",
+            "ParameterValue": "template-key"
+        },
+        {
+            "ParameterKey": "Cryptography",
+            "ParameterValue": "rsa"
+        },
+        {
+            "ParameterKey": "PrivateKeyFormat",
+            "ParameterValue": "pem"
+        }
+    ]
+}

@@ -1,0 +1,128 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "isTlsVersionAndCipherSuiteEnabled",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isWafFailOpenEnabled",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isHttp2Enabled",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "IdleTimeoutSeconds",
+            "ParameterValue": "60"
+        },
+        {
+            "ParameterKey": "ClientKeepAliveSeconds",
+            "ParameterValue": "3600"
+        },
+        {
+            "ParameterKey": "DesyncMitigationMode",
+            "ParameterValue": "defensive"
+        },
+        {
+            "ParameterKey": "XffHeaderProcessingMode",
+            "ParameterValue": "append"
+        },
+        {
+            "ParameterKey": "isXffClientPortEnabled",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isPreserveHostHeaderEnabled",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isDeletionProtectionEnabled",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isAccessLogsEnabled",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isConnectionLogsEnabled",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "HealthyThresholdCount",
+            "ParameterValue": "5"
+        },
+        {
+            "ParameterKey": "UnhealthyThresholdCount",
+            "ParameterValue": "8"
+        },
+        {
+            "ParameterKey": "HealthCheckTimeoutSeconds",
+            "ParameterValue": "10"
+        },
+        {
+            "ParameterKey": "HealthCheckIntervalSeconds",
+            "ParameterValue": "30"
+        },
+        {
+            "ParameterKey": "isDeregistrationConnectionTermination",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "DeregistrationDelayTimeoutSeconds",
+            "ParameterValue": "300"
+        },
+        {
+            "ParameterKey": "isProxyProtocolV2",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isPreserveClientIp",
+            "ParameterValue": "true"
+        },
+        {
+            "ParameterKey": "isStickiness",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "isLoadBalancingCrossZone",
+            "ParameterValue": "use_load_balancer_configuration"
+        },
+        {
+            "ParameterKey": "DnsFailoverMinimumHealthyTargetsCount",
+            "ParameterValue": "1"
+        },
+        {
+            "ParameterKey": "DnsFailoverMinimumHealthyTargetsPercentage",
+            "ParameterValue": "off"
+        },
+        {
+            "ParameterKey": "RroutingMinimumHealthyTargetsCount",
+            "ParameterValue": "1"
+        },
+        {
+            "ParameterKey": "RroutingMinimumHealthyTargetsPercentage",
+            "ParameterValue": "off"
+        },
+        {
+            "ParameterKey": "SslSecurityPolicy",
+            "ParameterValue": "ELBSecurityPolicy-TLS13-1-2-2021-06"
+        },
+        {
+            "ParameterKey": "NakedCertificateArn",
+            "ParameterValue": ""
+        },
+        {
+            "ParameterKey": "WildCertificateArn",
+            "ParameterValue": ""
+        }
+    ]
+}

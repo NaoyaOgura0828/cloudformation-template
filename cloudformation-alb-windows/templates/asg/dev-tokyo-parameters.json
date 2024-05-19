@@ -1,0 +1,28 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "template"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "MinSize",
+            "ParameterValue": "0"
+        },
+        {
+            "ParameterKey": "MaxSize",
+            "ParameterValue": "0"
+        },
+        {
+            "ParameterKey": "DesiredCapacity",
+            "ParameterValue": "0"
+        },
+        {
+            "ParameterKey": "HealthCheckGracePeriod",
+            "ParameterValue": "0"
+        }
+    ]
+}
