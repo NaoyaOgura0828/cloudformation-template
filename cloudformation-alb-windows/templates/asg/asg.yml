@@ -44,8 +44,8 @@ Resources:
       HealthCheckType: ELB
       HealthCheckGracePeriod: !Ref HealthCheckGracePeriod
       VPCZoneIdentifier:
-        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-public-subnet1
-        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-public-subnet2
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1a-id
+        - Fn::ImportValue: !Sub ${SystemName}-${EnvType}-subnet-private-1d-id
       TerminationPolicies:
         - Default
       NewInstancesProtectedFromScaleIn: false
