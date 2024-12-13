@@ -1,0 +1,455 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Network for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  VpcCidrBlock:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  SubnetPublicCidrBlock1a:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  SubnetPublicCidrBlock1d:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  SubnetPrivateCidrBlock1a:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  SubnetPrivateCidrBlock1d:
+    Type: String
+    AllowedPattern: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{2})
+  isCreateNatGateway:
+    Type: String
+    AllowedValues: [true, false]
+  isFirewallDeleteProtection:
+    Type: String
+    AllowedValues: [true, false]
+  isFirewallSubnetChangeProtection:
+    Type: String
+    AllowedValues: [true, false]
+  isFirewallPolicyChangeProtection:
+    Type: String
+    AllowedValues: [true, false]
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Conditions:
+  isCreateNatGatewayTrue: !Equals [ !Ref isCreateNatGateway, true ]
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-vpc
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  SubnetPublic1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetPublicCidrBlock1a
+      AvailabilityZone: !FindInMap [AzMap, !Ref AWS::Region, 1st]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-subnet-public-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  SubnetPublic1d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetPublicCidrBlock1d
+      AvailabilityZone: !FindInMap [AzMap, !Ref AWS::Region, 3rd]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-subnet-public-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-igw
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  RouteTableInternetGateway:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-routetable-igw
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  GatewayRouteTableAssociationInternetGateway:
+    Type: AWS::EC2::GatewayRouteTableAssociation
+    Properties:
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTableInternetGateway
+
+  RouteTablePublic1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-routetable-public-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  RouteTablePublic1d:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-routetable-public-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  SubnetRouteTableAssociationPublic1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublic1a
+      RouteTableId: !Ref RouteTablePublic1a
+
+  SubnetRouteTableAssociationPublic1d:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublic1d
+      RouteTableId: !Ref RouteTablePublic1d
+
+  SubnetPrivate1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetPrivateCidrBlock1a
+      AvailabilityZone: !FindInMap [AzMap, !Ref AWS::Region, 1st]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-subnet-private-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  SubnetPrivate1d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetPrivateCidrBlock1d
+      AvailabilityZone: !FindInMap [AzMap, !Ref AWS::Region, 3rd]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-subnet-private-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  RouteTablePrivate1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-routetable-private-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  RouteTablePrivate1d:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-routetable-private-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EipNatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eip-natgateway-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  EipNatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-eip-natgateway-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  NatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !Ref SubnetPublic1a
+      ConnectivityType: public
+      AllocationId: !GetAtt EipNatGateway1a.AllocationId
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-natgateway-1a
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  NatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !Ref SubnetPublic1d
+      ConnectivityType: public
+      AllocationId: !GetAtt EipNatGateway1d.AllocationId
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-natgateway-1d
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  RoutePrivateNatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1a
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1a
+
+  RoutePrivateNatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1d
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1d
+
+  SubnetRouteTableAssociationPrivate1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivate1a
+      RouteTableId: !Ref RouteTablePrivate1a
+
+  SubnetRouteTableAssociationPrivate1d:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivate1d
+      RouteTableId: !Ref RouteTablePrivate1d
+
+  NetworkFirewall:
+    Type: AWS::NetworkFirewall::Firewall
+    Properties:
+      FirewallName: !Sub ${SystemName}-${EnvType}-networkfirewall-firewall
+      Description: !Sub ${SystemName}-${EnvType}-networkfirewall-firewall
+      VpcId: !Ref Vpc
+      SubnetMappings:
+        - SubnetId: !Ref SubnetPrivate1a
+          IPAddressType: IPV4
+        - SubnetId: !Ref SubnetPrivate1d
+          IPAddressType: IPV4
+      DeleteProtection: !Ref isFirewallDeleteProtection
+      SubnetChangeProtection: !Ref isFirewallSubnetChangeProtection
+      FirewallPolicyArn: !Ref NetworkFirewallPolicy
+      FirewallPolicyChangeProtection: !Ref isFirewallPolicyChangeProtection
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-networkfirewall-firewall
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  NetworkFirewallPolicy:
+    Type: AWS::NetworkFirewall::FirewallPolicy
+    Properties:
+      FirewallPolicyName: !Sub ${SystemName}-${EnvType}-networkfirewall-firewallpolicy
+      Description: !Sub ${SystemName}-${EnvType}-networkfirewall-firewallpolicy
+      FirewallPolicy:
+        StatelessDefaultActions:
+          - aws:pass
+        StatelessFragmentDefaultActions:
+          - aws:pass
+        StatefulRuleGroupReferences:
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/AbusedLegitBotNetCommandAndControlDomainsActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/AbusedLegitMalwareDomainsActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/BotNetCommandAndControlDomainsActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/MalwareDomainsActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesBotnetActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesBotnetWebActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesDoSActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesEmergingEventsActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesExploitsActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesIOCActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesMalwareActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesMalwareCoinminingActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesMalwareMobileActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesMalwareWebActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesPhishingActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesScannersActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesSuspectActionOrder
+          - ResourceArn: !Sub arn:aws:network-firewall:${AWS::Region}:aws-managed:stateful-rulegroup/ThreatSignaturesWebAttacksActionOrder
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-${EnvType}-networkfirewall-firewallpolicy
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+  NetworkFirewallLoggingConfiguration:
+    Type: AWS::NetworkFirewall::LoggingConfiguration
+    Properties:
+      FirewallArn: !Ref NetworkFirewall
+      LoggingConfiguration:
+        LogDestinationConfigs:
+          - LogType: ALERT
+            LogDestinationType: CloudWatchLogs
+            LogDestination:
+              logGroup: !Sub /aws/networkfirewall/${SystemName}-${EnvType}-networkfirewall-firewall-alert
+
+  RouteRouteTablePrivate1aInternetGateway:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1a
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  RouteRouteTablePrivate1dInternetGateway:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1d
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+Outputs:
+  VpcId:
+    Value: !Ref Vpc
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-vpc-id
+  VpcCidr:
+    Value: !GetAtt Vpc.CidrBlock
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-vpc-cidr
+  SubnetPublic1aId:
+    Value: !Ref SubnetPublic1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-public-1a-id
+  SubnetPublic1aCidr:
+    Value: !Ref SubnetPublicCidrBlock1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-public-1a-cidr
+  SubnetPublic1dId:
+    Value: !Ref SubnetPublic1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-public-1d-id
+  SubnetPublic1dCidr:
+    Value: !Ref SubnetPublicCidrBlock1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-public-1d-cidr
+  RouteTablePublic1aId:
+    Value: !Ref RouteTablePublic1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-routetable-public-1a-id
+  RouteTablePublic1dId:
+    Value: !Ref RouteTablePublic1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-routetable-public-1d-id
+  SubnetPrivate1aId:
+    Value: !Ref SubnetPrivate1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-private-1a-id
+  SubnetPrivate1aCidr:
+    Value: !Ref SubnetPrivateCidrBlock1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-private-1a-cidr
+  SubnetPrivate1dId:
+    Value: !Ref SubnetPrivate1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-private-1d-id
+  SubnetPrivate1dCidr:
+    Value: !Ref SubnetPrivateCidrBlock1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-subnet-private-1d-cidr
+  RouteTablePrivate1aId:
+    Value: !Ref RouteTablePrivate1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-routetable-private-1a-id
+  RouteTablePrivate1dId:
+    Value: !Ref RouteTablePrivate1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-routetable-private-1d-id
+  EipNatGateway1a:
+    Condition: isCreateNatGatewayTrue
+    Value: !Ref EipNatGateway1a
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1a-ip
+  EipNatGateway1d:
+    Condition: isCreateNatGatewayTrue
+    Value: !Ref EipNatGateway1d
+    Export:
+      Name: !Sub ${SystemName}-${EnvType}-eip-natgateway-1d-ip

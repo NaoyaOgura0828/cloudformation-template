@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudWatch Logs for template
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  EnvType:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  RetentionInDays:
+    Type: Number
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 2192, 2557, 2922, 3288, 3653, '']
+
+Conditions:
+  HasRetentionInDays: !Not [!Equals [!Ref RetentionInDays, '']]
+
+Resources:
+  LogGroupNetworkFirewallAlert:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/networkfirewall/${SystemName}-${EnvType}-networkfirewall-firewall-alert
+      RetentionInDays: !If
+        - HasRetentionInDays
+        - !Ref RetentionInDays
+        - !Ref AWS::NoValue
+      Tags:
+        - Key: Name
+          Value: !Sub /aws/networkfirewall/${SystemName}-${EnvType}-networkfirewall-firewall-alert
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
